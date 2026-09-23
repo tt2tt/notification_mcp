@@ -25,7 +25,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 1: 開発環境構築
-- [ ] Python venv作成（Windows 11 / PowerShell前提）
+- [x] Python venv作成（Windows 11 / PowerShell前提） → `.venv` 作成済み(Python 3.14.7)
 - [ ] 依存パッケージ選定
   - `mcp`（公式Python SDK）
   - `httpx`（Discord Webhook/API呼び出し用、非同期対応）
