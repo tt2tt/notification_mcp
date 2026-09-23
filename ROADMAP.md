@@ -93,9 +93,9 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ## Phase 6: 配布・運用整備
 - [ ] README作成（セットアップ手順、Claude Desktop/Codeへの登録方法）
-- [ ] Docker化（必要な場合、WSL内Dockerを使用する前提で `Dockerfile` / `docker-compose.yml` 作成）
 - [ ] バージョニング・CHANGELOG整備
-- [ ] （任意）PyPI公開 or GitHub Releasesでの配布
+- ~~Docker化~~ → 不要と判断(個人のローカル利用が主目的のため)
+- ~~（任意）PyPI公開 or GitHub Releasesでの配布~~ → 不要と判断
 
 ---
 
