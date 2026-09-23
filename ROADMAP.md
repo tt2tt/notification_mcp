@@ -72,8 +72,19 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 5: テスト・品質保証
-- [ ] `pytest` によるユニットテスト整備
-  - Discord API呼び出し部分は `respx` 等でモック化
+- [x] `pytest` によるユニットテスト整備(関数単位、Discord API呼び出しは`respx`でモック化) → 12件全て成功。`pytest`/`pytest-asyncio`/`respx`を開発依存に追加、`pyproject.toml`に`[tool.pytest.ini_options]`設定を追加
+  - [x] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url`
+  - [x] `tests/test_config.py` : `test_validate_webhook_url_rejects_invalid_url`
+  - [x] `tests/test_config.py` : `test_load_webhook_config_returns_channel_url_dict` → `load_dotenv()`が呼び出し元ディレクトリを起点に親をたどって実プロジェクトの`.env`を見つけてしまう仕様を発見し、テストでは`load_dotenv`をno-op化して分離
+  - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_no_webhooks_configured`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_posts_content_successfully`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_raises_when_message_too_long`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_succeeds_after_retryable_error`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_raises_on_non_retryable_error`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_raises_after_max_retries`
+  - [x] `tests/test_tools.py` : `test_send_notification_returns_success_message`
+  - [x] `tests/test_tools.py` : `test_send_notification_returns_error_for_unknown_channel`
+  - [x] `tests/test_tools.py` : `test_send_notification_returns_error_on_http_failure` → Webhook URLが結果に含まれないことも確認
 - [x] 単一責任の原則に沿ったモジュール分割の見直し → `config.py`/`discord_client.py`/`logging_config.py`/`server.py`はそれぞれ単一の関心事に閉じており問題なし。`tools.py`の`send_notification`はMCPツール境界層として複数処理(設定解決・送信・エラー変換・ログ)を担うが、境界層の責務として妥当と判断
   - 追加対応: `discord_client.py`の`send_webhook_message_with_retry`にリトライ時のログ出力(`logger.warning`)を追加(Webhook URLが含まれないことを確認済み)
 - [x] 各処理へのコメント付与（CLAUDE.mdルール準拠） → 全5ファイルをレビューし、コメントが不足していた6箇所(メッセージ長チェック、リトライ判定、`.env`フィルタリング、チャンネル解決、送信処理、`server.py`の各ステップ)に追加。Lint・動作確認済み

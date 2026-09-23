@@ -23,8 +23,11 @@ notification-mcp = "notification_mcp.server:main"
 # 開発時のみ必要な依存関係(pip install -e ".[dev]" でインストールする)
 [project.optional-dependencies]
 dev = [
-    "ruff==0.16.8",   # Lint・フォーマット用
-    "mcp[cli]==2.2.0", # `mcp dev`によるMCP Inspectorでの手動動作確認用
+    "ruff==0.16.8",          # Lint・フォーマット用
+    "mcp[cli]==2.2.0",       # `mcp dev`によるMCP Inspectorでの手動動作確認用
+    "pytest==9.1.1",         # テストランナー
+    "pytest-asyncio==1.4.0", # 非同期関数のテスト用
+    "respx==0.23.1",         # httpxリクエストのモック用
 ]
 
 # hatchlingのビルド対象パッケージ(srcレイアウト)を指定
@@ -39,3 +42,8 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"] # pycodestyle, pyflakes, isort相当のルールを有効化
+
+# pytest-asyncioの設定(async defテスト関数を自動的に非同期テストとして扱う)
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
