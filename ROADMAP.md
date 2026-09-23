@@ -32,8 +32,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
   - `python-dotenv`（1.2.3）
   - `pydantic`（入力バリデーション / 2.13.5）
 - [x] `pyproject.toml` によるパッケージ構成 → 作成済み(ビルドバックエンド: hatchling、`src`レイアウト、`notification-mcp`コマンドを`[project.scripts]`で定義)。`pip install -e .` で動作確認済み
-- [ ] Git初期化・`.gitignore` 整備（`.env`, `__pycache__` 等）
-- [ ] Lintツール導入（PEP8準拠のため `ruff` or `flake8` + `black`）
+- [x] Git初期化・`.gitignore` 整備（`.env`, `__pycache__` 等） → 初期化済み・`.gitignore`に`.venv/`, `__pycache__/`, `*.pyc`, `.env`, `.pytest_cache/`, `*.egg-info/`を登録済み
+- [x] Lintツール導入（PEP8準拠のため `ruff` or `flake8` + `black`） → `ruff`を採用(0.16.8)。`pyproject.toml`の`[project.optional-dependencies].dev`と`[tool.ruff]`に設定を追加し、`ruff check`で動作確認済み
 
 ---
 
