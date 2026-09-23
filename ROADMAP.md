@@ -74,8 +74,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ## Phase 5: テスト・品質保証
 - [ ] `pytest` によるユニットテスト整備
   - Discord API呼び出し部分は `respx` 等でモック化
-- [ ] 単一責任の原則に沿ったモジュール分割の見直し
-  - 例: `discord_client.py`（送信処理）/ `tools.py`（MCPツール定義）/ `config.py`（設定読込）
+- [x] 単一責任の原則に沿ったモジュール分割の見直し → `config.py`/`discord_client.py`/`logging_config.py`/`server.py`はそれぞれ単一の関心事に閉じており問題なし。`tools.py`の`send_notification`はMCPツール境界層として複数処理(設定解決・送信・エラー変換・ログ)を担うが、境界層の責務として妥当と判断
+  - 追加対応: `discord_client.py`の`send_webhook_message_with_retry`にリトライ時のログ出力(`logger.warning`)を追加(Webhook URLが含まれないことを確認済み)
 - [ ] 各処理へのコメント付与（CLAUDE.mdルール準拠）
 
 ---

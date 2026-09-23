@@ -1,8 +1,11 @@
 """Discord Webhookへのメッセージ送信を行うモジュール。"""
 
 import asyncio
+import logging
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 # Discordの仕様上、メッセージ本文の最大文字数
 _MAX_CONTENT_LENGTH = 2000
@@ -50,9 +53,27 @@ async def send_webhook_message_with_retry(
             is_retryable = error.response.status_code in _RETRYABLE_STATUS_CODES
             if is_last_attempt or not is_retryable:
                 raise
-            await asyncio.sleep(_resolve_wait_seconds(error, attempt))
-        except httpx.TransportError:
+            wait_seconds = _resolve_wait_seconds(error, attempt)
+            logger.warning(
+                "送信に失敗したためリトライします"
+                "(試行 %d/%d、HTTPステータス: %d、%.1f秒後に再送信)",
+                attempt + 1,
+                max_retries,
+                error.response.status_code,
+                wait_seconds,
+            )
+            await asyncio.sleep(wait_seconds)
+        except httpx.TransportError as error:
             # 接続エラー・タイムアウトも一時的な不調とみなしリトライする
             if attempt >= max_retries:
                 raise
-            await asyncio.sleep(2**attempt)
+            wait_seconds = 2**attempt
+            logger.warning(
+                "送信に失敗したためリトライします"
+                "(試行 %d/%d、通信エラー: %s、%.1f秒後に再送信)",
+                attempt + 1,
+                max_retries,
+                type(error).__name__,
+                wait_seconds,
+            )
+            await asyncio.sleep(wait_seconds)
