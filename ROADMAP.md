@@ -46,7 +46,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] MCPサーバーの起動・ツール登録の最小骨格作成
   - [x] `server.py` : `main() -> None` — `MCPServer`を初期化し`send_notification`を`add_tool`で登録、stdioで起動するエントリポイント
 - [x] `mcp dev` / MCP Inspector で単体動作確認 → `mcp dev`はブラウザ操作が必要なため、代わりにstdioクライアントを使った検証スクリプトで確認(`list_tools`でのスキーマ確認、未設定チャンネル時のエラー、送信失敗時のHTTPエラー捕捉が正常動作することを確認済み)
-- [ ] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認
+- [ ] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認 → **保留**(利用予定クライアントの登録方法が未確定のため後日実施)
 
 ---
 
@@ -57,10 +57,16 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 4: 堅牢性の向上
-- [ ] エラーハンドリング（Discord API側のレート制限・タイムアウト対応）
-- [ ] リトライ処理（指数バックオフ）
-- [ ] ロギング整備（送信成否・失敗理由を記録）
-- [ ] 入力バリデーション強化（メッセージ長制限2000文字対応等）
+- [x] 入力バリデーション強化（メッセージ長制限2000文字対応等） → Phase 2で実装済み(`discord_client.py`の`send_webhook_message`内でチェック)
+- [x] タイムアウト対応(関数単位)
+  - [x] `discord_client.py` : `send_webhook_message(webhook_url: str, message: str, timeout: float = 10.0) -> None` — 既存関数にタイムアウト引数を追加し、httpxのタイムアウト設定に反映する
+- [ ] リトライ処理(指数バックオフ、関数単位)
+  - [ ] `discord_client.py` : `send_webhook_message_with_retry(webhook_url: str, message: str, max_retries: int = 3) -> None` — `send_webhook_message`を指数バックオフでリトライし、429(レート制限)時は`Retry-After`ヘッダーを尊重する
+  - [ ] `tools.py` : `send_notification`が`send_webhook_message`ではなく`send_webhook_message_with_retry`を呼ぶように修正
+- [ ] ロギング整備(関数単位)
+  - [ ] `logging_config.py` : `setup_logging() -> None` — ロギングのフォーマット・出力先を初期化する
+  - [ ] `server.py` : `main()`の冒頭で`setup_logging()`を呼び出す
+  - [ ] `tools.py` : `send_notification`内で送信成否をログ出力するように修正
 
 ---
 
