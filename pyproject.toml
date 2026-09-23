@@ -23,7 +23,8 @@ notification-mcp = "notification_mcp.server:main"
 # 開発時のみ必要な依存関係(pip install -e ".[dev]" でインストールする)
 [project.optional-dependencies]
 dev = [
-    "ruff==0.16.8", # Lint・フォーマット用
+    "ruff==0.16.8",   # Lint・フォーマット用
+    "mcp[cli]==2.2.0", # `mcp dev`によるMCP Inspectorでの手動動作確認用
 ]
 
 # hatchlingのビルド対象パッケージ(srcレイアウト)を指定
