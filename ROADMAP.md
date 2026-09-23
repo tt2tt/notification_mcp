@@ -38,8 +38,13 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 2: 最小実装（MVP）
-- [ ] Webhook経由でテキストメッセージを送信する単一ツールを実装
+- [x] Webhook経由でテキストメッセージを送信する単一ツールを実装(関数単位)
+  - [x] `config.py` : `load_webhook_config() -> dict[str, str]` — `.env`から`DISCORD_WEBHOOK_<チャンネル名>`を読み込み、`{チャンネル名: URL}`の辞書を返す
+  - [x] `config.py` : `validate_webhook_url(url: str) -> None` — Webhook URLの形式を検証し、不正なら例外を送出する
+  - [x] `discord_client.py` : `send_webhook_message(webhook_url: str, message: str) -> None` — httpxでWebhookにテキストメッセージを非同期送信する
+  - [x] `tools.py` : `send_notification(channel: str, message: str) -> str` — チャンネル名からWebhook URLを解決し送信、結果メッセージを返すMCPツール本体
 - [ ] MCPサーバーの起動・ツール登録の最小骨格作成
+  - [ ] `server.py` : `main() -> None` — サーバーを初期化しstdioで起動するエントリポイント
 - [ ] `mcp dev` / MCP Inspector で単体動作確認
 - [ ] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認
 
