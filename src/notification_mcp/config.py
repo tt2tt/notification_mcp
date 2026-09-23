@@ -15,9 +15,12 @@ _WEBHOOK_URL_PATTERN = re.compile(
 
 
 def validate_webhook_url(url: str) -> None:
-    """Webhook URLの形式を検証し、不正であれば例外を送出する。"""
+    """Webhook URLの形式を検証し、不正であれば例外を送出する。
+
+    例外メッセージはログ等に記録される可能性があるため、URL本体は含めない。
+    """
     if not _WEBHOOK_URL_PATTERN.match(url):
-        raise ValueError(f"不正なDiscord Webhook URL形式です: {url}")
+        raise ValueError("不正なDiscord Webhook URL形式です。")
 
 
 def load_webhook_config() -> dict[str, str]:

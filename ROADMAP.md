@@ -63,10 +63,11 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] リトライ処理(指数バックオフ、関数単位)
   - [x] `discord_client.py` : `send_webhook_message_with_retry(webhook_url: str, message: str, max_retries: int = 3) -> None` — `send_webhook_message`を指数バックオフでリトライし、429(レート制限)時は`Retry-After`ヘッダーを尊重する。リトライ対象は429/5xxのみ(4xxは即エラー)
   - [x] `tools.py` : `send_notification`が`send_webhook_message`ではなく`send_webhook_message_with_retry`を呼ぶように修正 → 実チャンネルへの送信で動作確認済み
-- [ ] ロギング整備(関数単位)
-  - [ ] `logging_config.py` : `setup_logging() -> None` — ロギングのフォーマット・出力先を初期化する
-  - [ ] `server.py` : `main()`の冒頭で`setup_logging()`を呼び出す
-  - [ ] `tools.py` : `send_notification`内で送信成否をログ出力するように修正
+- [x] ロギング整備(関数単位)
+  - [x] `logging_config.py` : `setup_logging() -> None` — ロギングのフォーマット・出力先を初期化する(標準エラー出力と`log/notification_mcp.log`の両方に出力)。`httpx`/`httpcore`のログにWebhook URLが漏洩する問題を発見し、WARNING以上に制限して対処。`log/*.log`は`.gitignore`に追加(`.gitkeep`のみ追跡)
+  - [x] `server.py` : `main()`の冒頭で`setup_logging()`を呼び出す
+  - [x] `tools.py` : `send_notification`内で送信成否をログ出力するように修正 → 動作確認済み(標準出力を汚さず、URLも記録されないことを確認)
+  - [x] 追加修正: `validate_webhook_url`の例外メッセージからURL本体を除去、`load_webhook_config()`呼び出しを`try/except`で保護(不正URL時にMCP SDKのクラッシュログ経由でURLが漏洩する経路を遮断)
 
 ---
 
