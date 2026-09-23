@@ -1,0 +1,25 @@
+# ビルドバックエンドの指定(hatchlingを使用してパッケージをビルドする)
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# プロジェクトのメタデータ(パッケージ名・バージョン・依存関係)
+[project]
+name = "notification-mcp"
+version = "0.1.0"
+description = "Discord通知用MCPサーバー"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp==2.2.0",           # MCP公式Python SDK
+    "httpx==0.28.1",        # Discord Webhookへの非同期HTTPリクエスト用
+    "python-dotenv==1.2.3", # .envファイルからの環境変数読み込み用
+    "pydantic==2.13.5",     # 設定値・入力値のバリデーション用
+]
+
+# コンソールスクリプトの定義(pip install -e . 後に notification-mcp コマンドで起動できる)
+[project.scripts]
+notification-mcp = "notification_mcp.server:main"
+
+# hatchlingのビルド対象パッケージ(srcレイアウト)を指定
+[tool.hatch.build.targets.wheel]
+packages = ["src/notification_mcp"]

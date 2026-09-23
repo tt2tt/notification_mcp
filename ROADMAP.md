@@ -26,12 +26,12 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ## Phase 1: 開発環境構築
 - [x] Python venv作成（Windows 11 / PowerShell前提） → `.venv` 作成済み(Python 3.14.7)
-- [ ] 依存パッケージ選定
-  - `mcp`（公式Python SDK）
-  - `httpx`（Discord Webhook/API呼び出し用、非同期対応）
-  - `python-dotenv`
-  - `pydantic`（入力バリデーション）
-- [ ] `pyproject.toml` によるパッケージ構成
+- [x] 依存パッケージ選定 → `.venv` にインストール済み
+  - `mcp`（公式Python SDK / 2.2.0）
+  - `httpx`（Discord Webhook呼び出し用、非同期対応 / 0.28.1）
+  - `python-dotenv`（1.2.3）
+  - `pydantic`（入力バリデーション / 2.13.5）
+- [x] `pyproject.toml` によるパッケージ構成 → 作成済み(ビルドバックエンド: hatchling、`src`レイアウト、`notification-mcp`コマンドを`[project.scripts]`で定義)。`pip install -e .` で動作確認済み
 - [ ] Git初期化・`.gitignore` 整備（`.env`, `__pycache__` 等）
 - [ ] Lintツール導入（PEP8準拠のため `ruff` or `flake8` + `black`）
 
