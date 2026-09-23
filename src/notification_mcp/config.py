@@ -29,6 +29,7 @@ def load_webhook_config() -> dict[str, str]:
     load_dotenv()
 
     webhook_config: dict[str, str] = {}
+    # プレフィックスに一致する環境変数だけを抽出し、チャンネル名をキーにした辞書を作る
     for key, value in os.environ.items():
         if not key.startswith(_WEBHOOK_ENV_PREFIX):
             continue

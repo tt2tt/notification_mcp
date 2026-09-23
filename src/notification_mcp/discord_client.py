@@ -21,6 +21,7 @@ async def send_webhook_message(
     webhook_url: str, message: str, timeout: float = _DEFAULT_TIMEOUT_SECONDS
 ) -> None:
     """Discord Webhookへテキストメッセージを非同期送信する。"""
+    # Discordの上限文字数を超えていないか事前にチェックする
     if len(message) > _MAX_CONTENT_LENGTH:
         raise ValueError(
             f"メッセージが{_MAX_CONTENT_LENGTH}文字を超えています(現在{len(message)}文字)。"
@@ -49,6 +50,7 @@ async def send_webhook_message_with_retry(
             await send_webhook_message(webhook_url, message)
             return
         except httpx.HTTPStatusError as error:
+            # 429/5xxなど一時的なエラーのみリトライし、それ以外は即座に伝播する
             is_last_attempt = attempt >= max_retries
             is_retryable = error.response.status_code in _RETRYABLE_STATUS_CODES
             if is_last_attempt or not is_retryable:

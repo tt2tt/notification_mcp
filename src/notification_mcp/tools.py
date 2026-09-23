@@ -19,6 +19,7 @@ async def send_notification(channel: str, message: str) -> str:
         logger.error("Webhook設定の読み込みに失敗しました: %s", error)
         return f"エラー: {error}"
 
+    # 指定されたチャンネル名が設定済みかどうかを確認する
     webhook_url = webhook_config.get(channel)
     if webhook_url is None:
         available = ", ".join(sorted(webhook_config))
@@ -28,6 +29,7 @@ async def send_notification(channel: str, message: str) -> str:
             f"利用可能なチャンネル: {available}"
         )
 
+    # リトライ付きでWebhookへ送信し、発生し得る例外を日本語メッセージに変換する
     try:
         await send_webhook_message_with_retry(webhook_url, message)
     except httpx.HTTPStatusError as error:
