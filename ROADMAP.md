@@ -92,7 +92,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 6: 配布・運用整備
-- [ ] README作成（セットアップ手順、Claude Desktop/Codeへの登録方法）
+- [x] README作成（セットアップ手順、Claude Desktop/Codeへの登録方法） → 作成済み。記載のLint/テストコマンドの動作も確認済み
 - [ ] バージョニング・CHANGELOG整備
 - ~~Docker化~~ → 不要と判断(個人のローカル利用が主目的のため)
 - ~~（任意）PyPI公開 or GitHub Releasesでの配布~~ → 不要と判断
