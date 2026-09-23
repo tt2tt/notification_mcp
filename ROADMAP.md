@@ -11,10 +11,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
   - **Webhook方式に確定**(管理コストの低さを優先し、Bot Token方式は不採用)
   - チャンネルごとにWebhook URLを発行し、`{チャンネル名: URL}` の形で設定管理する
   - 対象チャンネルが増える場合は都度Webhookを手動発行する運用とする
-- [ ] 提供するMCPツールの洗い出し（例）
-  - `send_notification(channel: str, message: str)` : テキスト通知
-  - `send_embed(channel: str, title, description, color, fields)` : Embed通知
-  - `send_file(channel: str, file_path, message)` : ファイル添付通知
+- [x] 提供するMCPツールの洗い出し（例）
+  - `send_notification(channel: str, message: str)` : テキスト通知(いったんこれのみ実装)
 - [ ] 認証情報の管理方法
   - `.env` + `python-dotenv`（チャンネル名をキーにしたWebhook URLの一覧）
   - `.env` は `.gitignore` に必ず含める
@@ -46,9 +44,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 3: 機能拡張
-- [ ] Embed通知対応（タイトル・説明・色・フィールド指定）
-- [ ] ファイル添付対応
 - [ ] 通知先の切り替え対応（複数Webhookを設定で選択、チャンネル追加時は`.env`にURLを追記するだけで対応）
+- 将来検討（優先度低・未着手）: Embed通知対応、ファイル添付対応
 
 ---
 
