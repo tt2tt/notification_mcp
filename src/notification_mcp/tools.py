@@ -3,7 +3,7 @@
 import httpx
 
 from notification_mcp.config import load_webhook_config
-from notification_mcp.discord_client import send_webhook_message
+from notification_mcp.discord_client import send_webhook_message_with_retry
 
 
 async def send_notification(channel: str, message: str) -> str:
@@ -20,7 +20,7 @@ async def send_notification(channel: str, message: str) -> str:
         )
 
     try:
-        await send_webhook_message(webhook_url, message)
+        await send_webhook_message_with_retry(webhook_url, message)
     except httpx.HTTPStatusError as error:
         return (
             f"エラー: '{channel}' への送信に失敗しました"

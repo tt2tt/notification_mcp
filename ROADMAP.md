@@ -60,9 +60,9 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] 入力バリデーション強化（メッセージ長制限2000文字対応等） → Phase 2で実装済み(`discord_client.py`の`send_webhook_message`内でチェック)
 - [x] タイムアウト対応(関数単位)
   - [x] `discord_client.py` : `send_webhook_message(webhook_url: str, message: str, timeout: float = 10.0) -> None` — 既存関数にタイムアウト引数を追加し、httpxのタイムアウト設定に反映する
-- [ ] リトライ処理(指数バックオフ、関数単位)
-  - [ ] `discord_client.py` : `send_webhook_message_with_retry(webhook_url: str, message: str, max_retries: int = 3) -> None` — `send_webhook_message`を指数バックオフでリトライし、429(レート制限)時は`Retry-After`ヘッダーを尊重する
-  - [ ] `tools.py` : `send_notification`が`send_webhook_message`ではなく`send_webhook_message_with_retry`を呼ぶように修正
+- [x] リトライ処理(指数バックオフ、関数単位)
+  - [x] `discord_client.py` : `send_webhook_message_with_retry(webhook_url: str, message: str, max_retries: int = 3) -> None` — `send_webhook_message`を指数バックオフでリトライし、429(レート制限)時は`Retry-After`ヘッダーを尊重する。リトライ対象は429/5xxのみ(4xxは即エラー)
+  - [x] `tools.py` : `send_notification`が`send_webhook_message`ではなく`send_webhook_message_with_retry`を呼ぶように修正 → 実チャンネルへの送信で動作確認済み
 - [ ] ロギング整備(関数単位)
   - [ ] `logging_config.py` : `setup_logging() -> None` — ロギングのフォーマット・出力先を初期化する
   - [ ] `server.py` : `main()`の冒頭で`setup_logging()`を呼び出す
