@@ -13,9 +13,12 @@ Discord通知用のMCPサーバーをPythonで実装する。
   - 対象チャンネルが増える場合は都度Webhookを手動発行する運用とする
 - [x] 提供するMCPツールの洗い出し（例）
   - `send_notification(channel: str, message: str)` : テキスト通知(いったんこれのみ実装)
-- [ ] 認証情報の管理方法
-  - `.env` + `python-dotenv`（チャンネル名をキーにしたWebhook URLの一覧）
-  - `.env` は `.gitignore` に必ず含める
+- [x] 認証情報の管理方法
+  - 命名規則: `DISCORD_WEBHOOK_<チャンネル名>` で `.env` に複数登録(例: `DISCORD_WEBHOOK_GENERAL`, `DISCORD_WEBHOOK_ALERT`)
+  - `config.py` が起動時に `python-dotenv` で読み込み、プレフィックスを剥がして `{チャンネル名: URL}` の辞書を生成し、MCPツールの `channel` 引数と対応させる
+  - `pydantic` でWebhook URLの形式を検証し、1件も設定されていない場合は起動時にエラーとする
+  - `.env` は `.gitignore` に必ず含め、コミットしない。代わりに値を空にした `.env.example` をコミットしてセットアップ手順とする
+  - ログ・エラーメッセージ・MCPツールのレスポンスにWebhook URLを含めない(送信成否とチャンネル名のみ返す)
 - [ ] MCPのトランスポート方式
   - stdio（Claude Desktop/Claude Codeへのローカル統合向け、まずはこちらを想定）
   - SSE/HTTP（将来的にリモート利用する場合）
