@@ -19,9 +19,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
   - `pydantic` でWebhook URLの形式を検証し、1件も設定されていない場合は起動時にエラーとする
   - `.env` は `.gitignore` に必ず含め、コミットしない。代わりに値を空にした `.env.example` をコミットしてセットアップ手順とする
   - ログ・エラーメッセージ・MCPツールのレスポンスにWebhook URLを含めない(送信成否とチャンネル名のみ返す)
-- [ ] MCPのトランスポート方式
-  - stdio（Claude Desktop/Claude Codeへのローカル統合向け、まずはこちらを想定）
-  - SSE/HTTP（将来的にリモート利用する場合）
+- [x] MCPのトランスポート方式 → **stdio方式に確定**(ローカルのClaude Desktop/Claude Code統合が主用途のため。ネットワーク経由の認証・ホスティングが不要)
+  - 将来検討（優先度低・未着手）: 複数人/リモート共有が必要になった場合のStreamable HTTP対応
 
 ---
 
