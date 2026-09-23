@@ -3,6 +3,8 @@
 Discord Webhookへ通知を送信するMCP(Model Context Protocol)サーバーです。
 Claude Desktop / Claude Codeなど、MCP対応クライアントからDiscordへテキスト通知を送信できます。
 
+バージョニングは[Semantic Versioning](https://semver.org/lang/ja/)に準拠します。変更履歴は[CHANGELOG.md](CHANGELOG.md)を参照してください。
+
 ## 必要要件
 
 - Windows 11

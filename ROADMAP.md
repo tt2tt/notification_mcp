@@ -93,7 +93,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ## Phase 6: 配布・運用整備
 - [x] README作成（セットアップ手順、Claude Desktop/Codeへの登録方法） → 作成済み。記載のLint/テストコマンドの動作も確認済み
-- [ ] バージョニング・CHANGELOG整備
+- [x] バージョニング・CHANGELOG整備 → Semantic Versioningを採用(`pyproject.toml`の`version = "0.1.0"`と一致)。`CHANGELOG.md`をKeep a Changelog形式で作成し、READMEからリンク
 - ~~Docker化~~ → 不要と判断(個人のローカル利用が主目的のため)
 - ~~（任意）PyPI公開 or GitHub Releasesでの配布~~ → 不要と判断
 
