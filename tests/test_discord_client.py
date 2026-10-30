@@ -9,6 +9,7 @@ import pytest
 import respx
 
 from notification_mcp.discord_client import (
+    _WebhookUrlRedactingFilter,
     send_webhook_message,
     send_webhook_message_with_retry,
 )
@@ -119,3 +120,35 @@ async def test_httpx_request_log_redacts_webhook_url(caplog):
     assert "/api/webhooks/***" in caplog.text
     assert "123456789012345678" not in caplog.text
     assert "dummy-token" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://discord.com/api/v10/webhooks/123456789012345678/dummy-token",
+        "https://discord.com/api/webhooks/123456789012345678/dummy-token?wait=true",
+    ],
+)
+def test_redacting_filter_redacts_versioned_webhook_url(url):
+    """バージョン付き・クエリ付きのURLも伏せ字になり、URLを含まないレコードは変わらない。"""
+    redacting_filter = _WebhookUrlRedactingFilter()
+
+    # Webhook URLを引数に含むレコードを伏せ字にする
+    url_record = logging.LogRecord(
+        "httpx", logging.INFO, __file__, 0, "HTTP Request: POST %s", (url,), None
+    )
+    redacting_filter.filter(url_record)
+    redacted_message = url_record.getMessage()
+
+    # ID・トークンが取り除かれ、パスの接頭辞は残ることを確認する
+    assert "webhooks/***" in redacted_message
+    assert "123456789012345678" not in redacted_message
+    assert "dummy-token" not in redacted_message
+
+    # Webhook URLを含まないレコードはmsg・argsとも変更されないことを確認する
+    other_record = logging.LogRecord(
+        "httpx", logging.INFO, __file__, 0, "接続数: %d", (3,), None
+    )
+    redacting_filter.filter(other_record)
+    assert other_record.msg == "接続数: %d"
+    assert other_record.args == (3,)
