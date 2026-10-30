@@ -164,7 +164,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
   - [x] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)
   - レビュー指摘対応(1回目)
-    - [ ] `discord_client.py` : モジュール読込時に`httpx`/`httpcore`のログをWARNING以上に制限する(`setup_logging`を呼ばない直接呼び出しでもWebhook URLがログに出ないようにする)
+    - [x] `discord_client.py` : モジュール読込時に`httpx`/`httpcore`のログをWARNING以上に制限する(`setup_logging`を呼ばない直接呼び出しでもWebhook URLがログに出ないようにする)
     - [ ] `logging_config.py` : `setup_logging` — `discord_client`へ移した`httpx`/`httpcore`のログ抑制処理を削除する(重複の解消)
     - [ ] `README.md` : チャンネル名は小文字で指定する旨・不正なチャンネル名は終了コード1になる旨・直接呼び出し時の例外範囲とログ出力先・通常インストール時の挙動・`-`始まり本文の例・ディレクトリ構成を実態に合わせて修正する
     - [ ] `CHANGELOG.md` : Keep a Changelogにない「確認済み」区分を削除する

@@ -8,6 +8,11 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+# httpx/httpcoreはINFOレベルでリクエストURL(Webhook URL本体)をログに出すため、
+# 呼び出し側のログ設定に関わらずURLが漏洩しないようWARNING以上に制限する
+for _logger_name in ("httpx", "httpcore"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
+
 # Discordの仕様上、メッセージ本文の最大文字数
 _MAX_CONTENT_LENGTH = 2000
 
