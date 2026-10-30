@@ -102,7 +102,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_config.py` : `test_load_webhook_config_exports_non_webhook_settings` — Webhook以外の設定が既存値を上書きせず環境変数へ反映されることを検証する
     - [x] `tests/test_config.py` : `test_validate_webhook_url_rejects_unsafe_token` — トークンに引用符等を含むURLが不正と判定されることを検証する
   - レビュー指摘対応(7回目)
-    - [ ] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン末尾のスラッシュ1つを許可し、以前は受け付けていた末尾`/`付きURLが読み飛ばされる回帰を解消する
+    - [x] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン末尾のスラッシュ1つを許可し、以前は受け付けていた末尾`/`付きURLが読み飛ばされる回帰を解消する
     - [ ] `config.py` : `_is_webhook_key(key: str) -> bool` — 大文字小文字を区別しないプレフィックス判定を共通化し、3か所の重複を解消する
     - [ ] `tests/test_config.py` : `_isolate_webhook_env` — 大文字小文字を区別せずに`DISCORD_WEBHOOK_`系の環境変数を除去する
     - [ ] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url` — 末尾スラッシュ・クエリ付きのURLも正しいと判定されることを検証し、テスト内の処理コメントを補う
