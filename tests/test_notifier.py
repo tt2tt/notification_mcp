@@ -83,3 +83,23 @@ async def test_notify_raises_for_invalid_channel_name(monkeypatch):
     # メッセージに入力値を含まず、設定読込も行われていないことを確認する
     assert "偽のログ行" not in str(exc_info.value)
     assert calls == []
+
+
+async def test_notify_normalizes_channel_to_lowercase(monkeypatch):
+    """大文字を含むチャンネル名でも、小文字化された設定のチャンネルへ送信される。"""
+    # 設定読込(キーは小文字化済み)と送信処理をモック化し、送信先を記録する
+    monkeypatch.setattr(
+        notifier, "load_webhook_config", lambda: {"news": _WEBHOOK_URL}
+    )
+    sent: list[str] = []
+
+    async def fake_send(webhook_url: str, message: str) -> None:
+        sent.append(webhook_url)
+
+    monkeypatch.setattr(notifier, "send_webhook_message_with_retry", fake_send)
+
+    # .envのキーと同じ大文字表記で通知を送信する
+    await notifier.notify("NEWS", "test")
+
+    # 小文字のチャンネルに解決されて送信されたことを確認する
+    assert sent == [_WEBHOOK_URL]
