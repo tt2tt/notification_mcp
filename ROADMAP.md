@@ -106,7 +106,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
 例外処理はデコレータ(`error_handlers.py`)に統一する。
 
 - [ ] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
-  - [ ] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
+  - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
   - [ ] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
   - [ ] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
   - [ ] `notifier.py` : `_load_webhook_config() -> dict[str, str]` — `load_webhook_config`を呼び、設定エラーを`WebhookConfigError`へ変換する(`reraise_as`を適用)
