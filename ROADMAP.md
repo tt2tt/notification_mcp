@@ -80,7 +80,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `load_webhook_config` — 全件が読み飛ばされた場合も誤解のない案内文にし、不要な`f`接頭辞を外す
     - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — キーはあるが全件読み飛ばされた場合に`ValueError`になることを検証する
   - レビュー指摘対応(4回目)
-    - [ ] `notifier.py` : `notify` — 形式検証後にチャンネル名を小文字へ正規化し、`.env`のキー(小文字化される)と一致させる(大文字指定が必ず未設定エラーになる問題への対応)
+    - [x] `notifier.py` : `notify` — 形式検証後にチャンネル名を小文字へ正規化し、`.env`のキー(小文字化される)と一致させる(大文字指定が必ず未設定エラーになる問題への対応)
     - [ ] `tests/test_notifier.py` : `test_notify_normalizes_channel_to_lowercase` — 大文字を含むチャンネル名でも送信できることを検証する
     - [ ] `config.py` : `_is_valid_webhook_url` — 全体一致(`fullmatch`)かつ空白を含まない形式で判定し、末尾に余計な文字が付いたURLを不正と判定する
     - [ ] `notifier.py` : `_load_webhook_config` — docstringの説明文をGoogleスタイルに沿って`Returns`より前へ移動する

@@ -109,6 +109,7 @@ async def notify(channel: str, message: str) -> None:
 
     Args:
         channel: 送信先のチャンネル名(`.env`の`DISCORD_WEBHOOK_<チャンネル名>`に対応)。
+            大文字・小文字は区別しない。
         message: 送信するメッセージ本文。
 
     Raises:
@@ -121,6 +122,9 @@ async def notify(channel: str, message: str) -> None:
     """
     # ログや結果メッセージへ出力する前に、チャンネル名の形式を検証する
     _validate_channel(channel)
+
+    # .envのキーから作るチャンネル名は小文字化されるため、指定側も小文字にそろえる
+    channel = channel.lower()
 
     # .envから読み込んだチャンネル名とWebhook URLの対応表を取得する
     webhook_config = _load_webhook_config()
