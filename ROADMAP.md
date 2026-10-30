@@ -109,6 +109,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
+  - [ ] `config.py` : `load_webhook_config` — 再起動なしで反映されるのはWebhookの設定のみである旨にdocstringを修正する(大項目1のレビュー指摘)
   - [ ] `CHANGELOG.md` : Unreleasedに運用チャンネルの変更(`general`→`news`、`fx`追加)と、空値・形式不正のキーを読み飛ばす変更を追記する
   - [ ] `README.md` : Webhookの設定(`DISCORD_WEBHOOK_`系)の変更は再起動なしで次回の送信から反映されること・OS環境変数が優先されること・Webhook以外の設定(`HTTPS_PROXY`等)は既存の環境変数を上書きせず、変更の反映には再起動が必要なことを追記する
   - 対象外: テストの`general`はモック上のダミーのチャンネル名で`.env`に依存しないため変更しない
