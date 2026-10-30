@@ -111,6 +111,22 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
     return channel, webhook_url
 
 
+def _is_webhook_key(key: str) -> bool:
+    """環境変数名がWebhookの設定(`DISCORD_WEBHOOK_`で始まる)かを判定する。
+
+    `.env`のキーは大文字小文字が区別されるため、大文字にそろえて判定する。
+
+    Args:
+        key: 判定する環境変数名。
+
+    Returns:
+        Webhookの設定を表すキーの場合は`True`。
+    """
+    # 大文字にそろえてプレフィックスと比較する
+    upper_key = key.upper()
+    return upper_key.startswith(_WEBHOOK_ENV_PREFIX)
+
+
 def _export_non_webhook_env(dotenv_entries: dict[str, str | None]) -> None:
     """`.env`のWebhook以外の設定を、既存の環境変数を上書きせずに`os.environ`へ反映する。
 
@@ -123,8 +139,7 @@ def _export_non_webhook_env(dotenv_entries: dict[str, str | None]) -> None:
     """
     for key, value in dotenv_entries.items():
         # Webhookの設定と、値のない行は反映対象外とする
-        upper_key = key.upper()
-        if upper_key.startswith(_WEBHOOK_ENV_PREFIX) or value is None:
+        if _is_webhook_key(key) or value is None:
             continue
 
         # 既に設定されている環境変数は上書きしない
@@ -151,19 +166,19 @@ def _read_webhook_env() -> dict[str, str]:
 
     # .envからプレフィックスに一致するキーだけを取り出す
     for key, value in dotenv_entries.items():
-        upper_key = key.upper()
-        if not upper_key.startswith(_WEBHOOK_ENV_PREFIX):
+        if not _is_webhook_key(key):
             continue
 
         # 「KEY」のみで値のない行は空値として扱う(後段で未設定として読み飛ばす)
         if value is None:
             value = ""
+        upper_key = key.upper()
         webhook_env[upper_key] = value
 
     # OS環境変数を後から反映し、.envより優先させる
     for key, value in os.environ.items():
-        upper_key = key.upper()
-        if upper_key.startswith(_WEBHOOK_ENV_PREFIX):
+        if _is_webhook_key(key):
+            upper_key = key.upper()
             webhook_env[upper_key] = value
 
     # .envとOS環境変数を合わせた設定を返す
