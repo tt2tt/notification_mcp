@@ -161,3 +161,18 @@ def test_load_webhook_config_exports_non_webhook_settings(monkeypatch):
 
     # Webhookの設定は環境変数へ反映されないことを確認する
     assert "DISCORD_WEBHOOK_NEWS" not in os.environ
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://discord.com/api/webhooks/123456789012345678/abc'secret",
+        'https://discord.com/api/webhooks/123456789012345678/abc"secret',
+        "https://discord.com/api/webhooks/123456789012345678/abc token",
+    ],
+)
+def test_validate_webhook_url_rejects_unsafe_token(url):
+    """トークンに引用符・空白等を含むURLは、伏せ字漏れを防ぐため不正と判定される。"""
+    # URLセーフでない文字を含むトークンはValueErrorになることを確認する
+    with pytest.raises(ValueError):
+        config.validate_webhook_url(url)
