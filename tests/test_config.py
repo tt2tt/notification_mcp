@@ -18,9 +18,10 @@ def _isolate_webhook_env(monkeypatch):
     # 見つけてしまうため、空の内容を返すようにしてos.environのみを対象にする
     monkeypatch.setattr(config, "dotenv_values", lambda: {})
 
-    # 環境変数に残っているDISCORD_WEBHOOK_系をすべて取り除く
+    # 環境変数に残っているDISCORD_WEBHOOK_系を、大文字小文字を区別せずすべて取り除く
     for key in list(os.environ):
-        if key.startswith("DISCORD_WEBHOOK_"):
+        upper_key = key.upper()
+        if upper_key.startswith("DISCORD_WEBHOOK_"):
             monkeypatch.delenv(key, raising=False)
 
 
