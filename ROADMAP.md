@@ -105,7 +105,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
 送信処理はサービス層(`notifier.notify`)に切り出してMCPツールとCLIで共有し、MCP経由と同じ挙動(リトライ・ログ・URL非出力)を保つ。
 例外処理はデコレータ(`error_handlers.py`)に統一する。
 
-- [x] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
+- [ ] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
   - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
   - [x] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
   - [x] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
@@ -115,6 +115,11 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `notifier.py` : `notify(channel: str, message: str) -> None` — 設定読込・URL解決・送信を順に行い、成功をログ出力する
   - [x] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
   - [x] `tools.py` : `send_notification`を`notify`呼び出しと成功メッセージ返却のみの境界層に修正(`return_error_message`を適用)。`tests/test_tools.py`のモック対象も`notifier`へ変更する
+  - レビュー指摘対応(1回目)
+    - [ ] `discord_client.py` : `_resolve_wait_seconds` — 数値以外の`Retry-After`(HTTP日付形式等)は`ValueError`を出さず指数バックオフへフォールバックする(入力エラーへの誤分類を防止)
+    - [ ] `error_handlers.py` : `translate_send_errors` — `httpx.InvalidURL`も`SendFailedError`へ変換し、例外連鎖を`from None`で切ってトレースバック経由のWebhook URL漏洩を防ぐ
+    - [ ] `notifier.py` : `_resolve_webhook_url` — 戻り値の処理にコメントを追加
+    - [ ] `notifier.py` : `notify` — 成功ログ出力にコメントを追加
 - [ ] CLIの実装 (`feature/cli`)
   - [ ] `error_handlers.py` : `return_exit_code(func)` — `NotificationError`をログ出力し、終了コード1を返すCLI用デコレータ
   - [ ] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
