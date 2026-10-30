@@ -70,12 +70,15 @@ def _resolve_webhook_url(webhook_config: dict[str, str], channel: str) -> str:
     # 指定されたチャンネル名が設定済みかどうかを確認する
     webhook_url = webhook_config.get(channel)
     if webhook_url is None:
-        # 指定ミスに気付けるよう、利用可能なチャンネル名を併記する
+        # 指定ミスに気付けるよう利用可能なチャンネル名を併記し、
+        # .envのURLが空・形式不正で読み飛ばされた可能性も案内する
         channel_names = sorted(webhook_config)
         available = ", ".join(channel_names)
         raise ChannelNotConfiguredError(
             f"チャンネル '{channel}' は設定されていません。"
             f"利用可能なチャンネル: {available}"
+            "(.envに設定済みの場合は、Webhook URLが空または形式不正のため"
+            "読み飛ばされていないかログを確認してください)"
         )
 
     # 設定済みのチャンネルであれば対応するWebhook URLを返す
