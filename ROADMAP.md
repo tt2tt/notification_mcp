@@ -113,7 +113,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `notifier.py` : `_resolve_webhook_url(webhook_config, channel) -> str` — チャンネル名からWebhook URLを解決し、未設定なら`ChannelNotConfiguredError`を送出する
   - [x] `notifier.py` : `_send(channel, webhook_url, message) -> None` — リトライ付きで送信する(`translate_send_errors`を適用)
   - [x] `notifier.py` : `notify(channel: str, message: str) -> None` — 設定読込・URL解決・送信を順に行い、成功をログ出力する
-  - [ ] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
+  - [x] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
   - [ ] `tools.py` : `send_notification`を`notify`呼び出しと成功メッセージ返却のみの境界層に修正(`return_error_message`を適用)。`tests/test_tools.py`のモック対象も`notifier`へ変更する
 - [ ] CLIの実装 (`feature/cli`)
   - [ ] `error_handlers.py` : `return_exit_code(func)` — `NotificationError`をログ出力し、終了コード1を返すCLI用デコレータ

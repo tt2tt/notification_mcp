@@ -1,6 +1,7 @@
 """例外処理を共通化するデコレータをまとめたモジュール。"""
 
 import functools
+import logging
 from collections.abc import Awaitable, Callable
 from typing import Concatenate, ParamSpec, TypeVar
 
@@ -11,6 +12,8 @@ from notification_mcp.exceptions import (
     NotificationError,
     SendFailedError,
 )
+
+logger = logging.getLogger(__name__)
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -83,5 +86,31 @@ def translate_send_errors(
             # 文字数超過等、送信前に検出した入力エラーはメッセージを引き継ぐ
             message = str(error)
             raise MessageRejectedError(message) from error
+
+    return wrapper
+
+
+def return_error_message(
+    func: Callable[P, Awaitable[str]],
+) -> Callable[P, Awaitable[str]]:
+    """`NotificationError`をログ出力し、エラーメッセージ文字列として返すデコレータ。
+
+    MCPツールは例外ではなく結果文字列をAIへ返すため、境界層で例外を文字列へ変換する。
+
+    Args:
+        func: 結果メッセージを返す非同期のMCPツール関数。
+
+    Returns:
+        通知例外を`"エラー: ..."`形式の文字列へ変換する非同期関数。
+    """
+
+    @functools.wraps(func)
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> str:
+        try:
+            return await func(*args, **kwargs)
+        except NotificationError as error:
+            # 例外ごとのログレベルで記録し、AIへ返すエラーメッセージを組み立てる
+            logger.log(error.log_level, "通知処理に失敗しました: %s", error)
+            return f"エラー: {error}"
 
     return wrapper
