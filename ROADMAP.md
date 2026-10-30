@@ -106,12 +106,15 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `_is_webhook_key(key: str) -> bool` — 大文字小文字を区別しないプレフィックス判定を共通化し、3か所の重複を解消する
     - [x] `tests/test_config.py` : `_isolate_webhook_env` — 大文字小文字を区別せずに`DISCORD_WEBHOOK_`系の環境変数を除去する
     - [x] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url` — 末尾スラッシュ・クエリ付きのURLも正しいと判定されることを検証し、テスト内の処理コメントを補う
-- [x] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
+- [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [x] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [x] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
   - [x] `config.py` : `load_webhook_config` — 再起動なしで反映されるのはWebhookの設定のみである旨にdocstringを修正する(大項目1のレビュー指摘)
   - [x] `CHANGELOG.md` : Unreleasedに運用チャンネルの変更(`general`→`news`、`fx`追加)と、空値・形式不正のキーを読み飛ばす変更を追記する
   - [x] `README.md` : Webhookの設定(`DISCORD_WEBHOOK_`系)の変更は再起動なしで次回の送信から反映されること・OS環境変数が優先されること・Webhook以外の設定(`HTTPS_PROXY`等)は既存の環境変数を上書きせず、変更の反映には再起動が必要なことを追記する
+  - レビュー指摘対応(1回目)
+    - [ ] `README.md` : Webhook以外の設定の反映タイミング(新規キーは次回送信から反映、既存の環境変数の変更・削除は再起動まで反映されない)を正確に記載し、`alert`は自動送信されない旨とCLIは毎回新しいプロセスである旨を明記する
+    - [ ] `config.py` : `load_webhook_config` — docstringのWebhook以外の設定の反映タイミングの記述を正確にする
   - 対象外: テストの`general`はモック上のダミーのチャンネル名で`.env`に依存しないため変更しない
 - 将来検討（優先度低・未着手）: Embed通知対応、ファイル添付対応
 
