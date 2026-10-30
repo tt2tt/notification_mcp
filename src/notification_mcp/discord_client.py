@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import re
 
 import httpx
 
@@ -15,6 +16,9 @@ _DEFAULT_TIMEOUT_SECONDS = 10.0
 
 # リトライ対象とするHTTPステータスコード(レート制限・サーバー側の一時的な不調)
 _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+
+# 秒数として解釈できるRetry-Afterヘッダーの形式(整数または小数)
+_RETRY_AFTER_SECONDS_PATTERN = re.compile(r"\d+(\.\d+)?")
 
 
 async def send_webhook_message(
@@ -34,10 +38,24 @@ async def send_webhook_message(
 
 
 def _resolve_wait_seconds(error: httpx.HTTPStatusError, attempt: int) -> float:
-    """次のリトライまでの待機秒数を求める(Retry-Afterヘッダー優先、無ければ指数バックオフ)。"""
+    """次のリトライまでの待機秒数を求める。
+
+    `Retry-After`ヘッダーが秒数形式であればその値を優先し、
+    無い場合やHTTP日付形式等の秒数として解釈できない場合は指数バックオフとする。
+
+    Args:
+        error: リトライ対象となったHTTPステータスエラー。
+        attempt: 0始まりの試行回数。
+
+    Returns:
+        次のリトライまでの待機秒数。
+    """
+    # 秒数形式のRetry-Afterヘッダーがあれば、サーバーの指示に従う
     retry_after = error.response.headers.get("Retry-After")
-    if retry_after is not None:
+    if retry_after is not None and _RETRY_AFTER_SECONDS_PATTERN.fullmatch(retry_after):
         return float(retry_after)
+
+    # それ以外は指数バックオフで待機する
     return 2**attempt
 
 

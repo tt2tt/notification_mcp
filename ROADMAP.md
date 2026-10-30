@@ -116,7 +116,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
   - [x] `tools.py` : `send_notification`を`notify`呼び出しと成功メッセージ返却のみの境界層に修正(`return_error_message`を適用)。`tests/test_tools.py`のモック対象も`notifier`へ変更する
   - レビュー指摘対応(1回目)
-    - [ ] `discord_client.py` : `_resolve_wait_seconds` — 数値以外の`Retry-After`(HTTP日付形式等)は`ValueError`を出さず指数バックオフへフォールバックする(入力エラーへの誤分類を防止)
+    - [x] `discord_client.py` : `_resolve_wait_seconds` — 数値以外の`Retry-After`(HTTP日付形式等)は`ValueError`を出さず指数バックオフへフォールバックする(入力エラーへの誤分類を防止)
     - [ ] `error_handlers.py` : `translate_send_errors` — `httpx.InvalidURL`も`SendFailedError`へ変換し、例外連鎖を`from None`で切ってトレースバック経由のWebhook URL漏洩を防ぐ
     - [ ] `notifier.py` : `_resolve_webhook_url` — 戻り値の処理にコメントを追加
     - [ ] `notifier.py` : `notify` — 成功ログ出力にコメントを追加
