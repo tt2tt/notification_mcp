@@ -51,11 +51,11 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 3: 機能拡張
-通知先の切り替えは、`config.py`が`DISCORD_WEBHOOK_`で始まるキーをすべて読み込む既存実装で対応済みのため、コード変更は不要。
+通知先の切り替えは、`config.py`が`DISCORD_WEBHOOK_`で始まるキーをすべて読み込む既存実装で対応済みのため、チャンネルの変更・追加自体にコード変更は不要(レビューで判明した設定読込の不具合は修正する)。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -66,10 +66,19 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `load_webhook_config` — 値が空(空白のみを含む)のキーは警告ログを出して読み飛ばし、他のチャンネルは送信できるようにする(ユーザー許可のうえ今回に限り`config.py`を読み込み・変更)
     - [x] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 空値のキーが読み飛ばされ、設定済みのチャンネルのみが返ることを検証する
     - [x] `.env.example` : 空値のキーは読み飛ばされる仕様に合わせて注意書きを修正する
+  - レビュー指摘対応(2回目)
+    - [x] `ROADMAP.md` : 「コード変更は不要」の記述を、設定読込の不具合修正を行う旨に修正する
+    - [ ] `config.py` : `_is_valid_webhook_url(url: str) -> bool` — URL形式の判定を切り出し、`validate_webhook_url`からも利用する
+    - [ ] `config.py` : `_parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None` — 1件のキーからチャンネル名とURL(前後の空白を除去)を取り出す。チャンネル名が空・値が空・URL形式が不正な場合は警告ログを出して`None`を返す
+    - [ ] `config.py` : `load_webhook_config` — 1件ごとの解析を`_parse_webhook_entry`へ委譲し、不正な1件のために他チャンネルが送信不能にならないようにする
+    - [ ] `tests/test_config.py` : `_isolate_webhook_env` — `load_dotenv`のno-op化と既存の`DISCORD_WEBHOOK_`系環境変数の除去を行うautouseフィクスチャに共通化する
+    - [ ] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 警告ログの出力も検証する
+    - [ ] `tests/test_config.py` : `test_load_webhook_config_skips_invalid_entries` — 形式不正のURL・空のチャンネル名が読み飛ばされ、前後の空白が除去されることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
-  - [ ] `CHANGELOG.md` : Unreleasedに運用チャンネルの変更(`general`→`news`、`fx`追加)を追記する
+  - [ ] `CHANGELOG.md` : Unreleasedに運用チャンネルの変更(`general`→`news`、`fx`追加)と、空値・形式不正のキーを読み飛ばす変更を追記する
+  - [ ] `README.md` : `.env`変更後はMCPクライアント(MCPサーバー)の再起動が必要な旨を追記する
   - 対象外: テストの`general`はモック上のダミーのチャンネル名で`.env`に依存しないため変更しない
 - 将来検討（優先度低・未着手）: Embed通知対応、ファイル添付対応
 
