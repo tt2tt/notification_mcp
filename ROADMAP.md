@@ -109,7 +109,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
   - [x] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
   - [x] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
-  - [ ] `notifier.py` : `_load_webhook_config() -> dict[str, str]` — `load_webhook_config`を呼び、設定エラーを`WebhookConfigError`へ変換する(`reraise_as`を適用)
+  - [x] `notifier.py` : `_load_webhook_config() -> dict[str, str]` — `load_webhook_config`を呼び、設定エラーを`WebhookConfigError`へ変換する(`reraise_as`を適用)
   - [ ] `notifier.py` : `_resolve_webhook_url(webhook_config, channel) -> str` — チャンネル名からWebhook URLを解決し、未設定なら`ChannelNotConfiguredError`を送出する
   - [ ] `notifier.py` : `_send(channel, webhook_url, message) -> None` — リトライ付きで送信する(`translate_send_errors`を適用)
   - [ ] `notifier.py` : `notify(channel: str, message: str) -> None` — 設定読込・URL解決・送信を順に行い、成功をログ出力する
