@@ -99,7 +99,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `_read_webhook_env` — `.env`のキーのプレフィックスを大文字小文字を区別せず判定し、`_export_non_webhook_env`を呼び出す。処理ごとのコメントを補う
     - [x] `config.py` : `load_webhook_config` — 処理ごとのコメントを補う
     - [x] `tests/test_config.py` : `test_load_webhook_config_accepts_lowercase_dotenv_keys` — `.env`の小文字キーも読み込まれることを検証する
-    - [ ] `tests/test_config.py` : `test_load_webhook_config_exports_non_webhook_settings` — Webhook以外の設定が既存値を上書きせず環境変数へ反映されることを検証する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_exports_non_webhook_settings` — Webhook以外の設定が既存値を上書きせず環境変数へ反映されることを検証する
     - [ ] `tests/test_config.py` : `test_validate_webhook_url_rejects_unsafe_token` — トークンに引用符等を含むURLが不正と判定されることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する

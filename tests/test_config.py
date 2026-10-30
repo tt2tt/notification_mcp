@@ -136,3 +136,28 @@ def test_load_webhook_config_accepts_lowercase_dotenv_keys(monkeypatch):
 
     # 小文字のキーもチャンネルとして読み込まれることを確認する
     assert config.load_webhook_config() == {"news": _VALID_URL}
+
+
+def test_load_webhook_config_exports_non_webhook_settings(monkeypatch):
+    """.envのWebhook以外の設定は既存値を上書きせず環境変数へ反映され、Webhookは反映されない。"""
+    # 終了時に元の状態へ戻るよう、検証用の環境変数を登録してから取り除く
+    monkeypatch.setenv("NOTIFICATION_MCP_TEST_NEW", "placeholder")
+    monkeypatch.delenv("NOTIFICATION_MCP_TEST_NEW")
+    monkeypatch.setenv("NOTIFICATION_MCP_TEST_EXISTING", "os-value")
+
+    # Webhook以外の新規・既存の設定とWebhookの設定を含む.envの内容を返すようにする
+    dotenv_content = {
+        "NOTIFICATION_MCP_TEST_NEW": "dotenv-value",
+        "NOTIFICATION_MCP_TEST_EXISTING": "dotenv-value",
+        "DISCORD_WEBHOOK_NEWS": _VALID_URL,
+    }
+    monkeypatch.setattr(config, "dotenv_values", lambda: dotenv_content)
+
+    config.load_webhook_config()
+
+    # 新規の設定は反映され、既存の環境変数は上書きされないことを確認する
+    assert os.environ["NOTIFICATION_MCP_TEST_NEW"] == "dotenv-value"
+    assert os.environ["NOTIFICATION_MCP_TEST_EXISTING"] == "os-value"
+
+    # Webhookの設定は環境変数へ反映されないことを確認する
+    assert "DISCORD_WEBHOOK_NEWS" not in os.environ
