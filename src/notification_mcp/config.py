@@ -4,7 +4,7 @@ import logging
 import os
 import re
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +104,37 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
 
     # 使用できる設定としてチャンネル名とURLを返す
     return channel, webhook_url
+
+
+def _read_webhook_env() -> dict[str, str]:
+    """`.env`とOS環境変数から`DISCORD_WEBHOOK_`で始まる設定を読み込む。
+
+    `.env`は呼び出しのたびに読み直し、`os.environ`へは展開しない。
+    そのため実行中のMCPサーバーでも、`.env`の名称変更・削除・値の修正が次回の送信から反映される。
+    同じキーがOS環境変数にもある場合は、OS環境変数を優先する。
+
+    Returns:
+        環境変数名とその値の対応表(値のない行は空文字列として扱う)。
+    """
+    webhook_env: dict[str, str] = {}
+
+    # .envの内容を毎回読み直し、プレフィックスに一致するキーだけを取り出す
+    dotenv_entries = dotenv_values()
+    for key, value in dotenv_entries.items():
+        if not key.startswith(_WEBHOOK_ENV_PREFIX):
+            continue
+
+        # 「KEY」のみで値のない行は空値として扱う(後段で未設定として読み飛ばす)
+        if value is None:
+            value = ""
+        webhook_env[key] = value
+
+    # OS環境変数を後から反映し、.envより優先させる
+    for key, value in os.environ.items():
+        if key.startswith(_WEBHOOK_ENV_PREFIX):
+            webhook_env[key] = value
+
+    return webhook_env
 
 
 def load_webhook_config() -> dict[str, str]:
