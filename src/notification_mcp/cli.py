@@ -1,7 +1,7 @@
 """コマンドラインから通知を送信するためのエントリポイント。
 
 使用例:
-    python -m notification_mcp.cli --channel general --message "処理が完了しました"
+    python -m notification_mcp.cli --channel news --message "処理が完了しました"
 
 終了コードは成功時0、送信失敗時1、引数不正時2(argparseの仕様)となる。
 """

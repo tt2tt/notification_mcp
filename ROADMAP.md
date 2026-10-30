@@ -51,7 +51,71 @@ Discord通知用のMCPサーバーをPythonで実装する。
 ---
 
 ## Phase 3: 機能拡張
-- [ ] 通知先の切り替え対応（複数Webhookを設定で選択、チャンネル追加時は`.env`にURLを追記するだけで対応）
+通知先の切り替えは、`config.py`が`DISCORD_WEBHOOK_`で始まるキーをすべて読み込む既存実装で対応済みのため、チャンネルの変更・追加自体にコード変更は不要(レビューで判明した設定読込の不具合は修正する)。
+今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
+MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
+
+- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+  - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
+  - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
+  - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
+  - [x] 動作確認 : CLIで`news`/`fx`へ送信できること、`general`が未設定チャンネルのエラー(終了コード1)になることを確認する(実チャンネルへ投稿するため、実施前にユーザーへ確認)
+  - レビュー指摘対応(1回目)
+    - [x] `ROADMAP.md` : `alert`の用途の記載を事実に合わせて修正する(自動送信処理は存在しない旨を明記)
+    - [x] `.env.example` : 上書きで失われた説明コメント(命名規則・小文字の`channel`との対応・Webhook URLの取得手順・使わないチャンネルの行は削除する旨)を新たに記載する
+    - [x] `config.py` : `load_webhook_config` — 値が空(空白のみを含む)のキーは警告ログを出して読み飛ばし、他のチャンネルは送信できるようにする(ユーザー許可のうえ今回に限り`config.py`を読み込み・変更)
+    - [x] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 空値のキーが読み飛ばされ、設定済みのチャンネルのみが返ることを検証する
+    - [x] `.env.example` : 空値のキーは読み飛ばされる仕様に合わせて注意書きを修正する
+  - レビュー指摘対応(2回目)
+    - [x] `ROADMAP.md` : 「コード変更は不要」の記述を、設定読込の不具合修正を行う旨に修正する
+    - [x] `config.py` : `_is_valid_webhook_url(url: str) -> bool` — URL形式の判定を切り出し、`validate_webhook_url`からも利用する
+    - [x] `config.py` : `_parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None` — 1件のキーからチャンネル名とURL(前後の空白を除去)を取り出す。チャンネル名が空・値が空・URL形式が不正な場合は警告ログを出して`None`を返す
+    - [x] `config.py` : `load_webhook_config` — 1件ごとの解析を`_parse_webhook_entry`へ委譲し、不正な1件のために他チャンネルが送信不能にならないようにする
+    - [x] `tests/test_config.py` : `_isolate_webhook_env` — `load_dotenv`のno-op化と既存の`DISCORD_WEBHOOK_`系環境変数の除去を行うautouseフィクスチャに共通化する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 警告ログの出力も検証する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_skips_invalid_entries` — 形式不正のURL・空のチャンネル名が読み飛ばされ、前後の空白が除去されることを検証する
+  - レビュー指摘対応(3回目)
+    - [x] `notifier.py` : `_resolve_webhook_url` — 未設定エラーのメッセージに「`.env`に設定済みの場合はURLが空・形式不正で読み飛ばされていないかログを確認する」旨の案内を追加する(形式不正が「未設定」としか表示されない問題への対応)
+    - [x] `notifier.py` : `_load_webhook_config` / `notify` — 形式不正のURLは読み飛ばされる仕様に合わせてdocstringの`Raises`を修正する
+    - [x] `config.py` : `load_webhook_config` — 全件が読み飛ばされた場合も誤解のない案内文にし、不要な`f`接頭辞を外す
+    - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — キーはあるが全件読み飛ばされた場合に`ValueError`になることを検証する
+  - レビュー指摘対応(4回目)
+    - [x] `notifier.py` : `notify` — 形式検証後にチャンネル名を小文字へ正規化し、`.env`のキー(小文字化される)と一致させる(大文字指定が必ず未設定エラーになる問題への対応)
+    - [x] `tests/test_notifier.py` : `test_notify_normalizes_channel_to_lowercase` — 大文字を含むチャンネル名でも送信できることを検証する
+    - [x] `config.py` : `_is_valid_webhook_url` — 全体一致(`fullmatch`)かつ空白を含まない形式で判定し、末尾に余計な文字が付いたURLを不正と判定する
+    - [x] `notifier.py` : `_load_webhook_config` — docstringの説明文をGoogleスタイルに沿って`Returns`より前へ移動する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — 案内文の内容とURL本体が含まれないことも検証する
+  - レビュー指摘対応(5回目)
+    - [x] `config.py` : `is_valid_channel_name(channel: str) -> bool` — チャンネル名の形式(英数字・`_`・`-`)判定を`notifier`から移して共通化する
+    - [x] `notifier.py` : `_validate_channel` — 共通化した`is_valid_channel_name`を利用し、`notifier`内の重複したパターン定義を削除する
+    - [x] `config.py` : `_parse_webhook_entry` — キーから作ったチャンネル名も`is_valid_channel_name`で検証し、不正な名前は(ログに名前を出さず)読み飛ばす
+    - [x] `config.py` : `_read_webhook_env() -> dict[str, str]` — `.env`を`dotenv_values`で毎回読み直し、OS環境変数(優先)と合わせて`DISCORD_WEBHOOK_`系の設定を返す(`os.environ`は変更しない)
+    - [x] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
+    - [x] `tests/test_config.py` : `_isolate_webhook_env` — `dotenv_values`のモック化に変更する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
+  - レビュー指摘対応(6回目)
+    - [x] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン部分をURLセーフな文字(英数字・`_`・`-`)に限定し、任意のクエリのみ許可する(伏せ字パターンで一部が残る値を受け付けないようにする)
+    - [x] `config.py` : `_export_non_webhook_env(dotenv_entries) -> None` — `.env`のWebhook以外の設定(`HTTPS_PROXY`等)を、既存の環境変数を上書きせずに`os.environ`へ反映する(`load_dotenv`廃止による回帰の解消)
+    - [x] `config.py` : `_read_webhook_env` — `.env`のキーのプレフィックスを大文字小文字を区別せず判定し、`_export_non_webhook_env`を呼び出す。処理ごとのコメントを補う
+    - [x] `config.py` : `load_webhook_config` — 処理ごとのコメントを補う
+    - [x] `tests/test_config.py` : `test_load_webhook_config_accepts_lowercase_dotenv_keys` — `.env`の小文字キーも読み込まれることを検証する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_exports_non_webhook_settings` — Webhook以外の設定が既存値を上書きせず環境変数へ反映されることを検証する
+    - [x] `tests/test_config.py` : `test_validate_webhook_url_rejects_unsafe_token` — トークンに引用符等を含むURLが不正と判定されることを検証する
+  - レビュー指摘対応(7回目)
+    - [x] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン末尾のスラッシュ1つを許可し、以前は受け付けていた末尾`/`付きURLが読み飛ばされる回帰を解消する
+    - [x] `config.py` : `_is_webhook_key(key: str) -> bool` — 大文字小文字を区別しないプレフィックス判定を共通化し、3か所の重複を解消する
+    - [x] `tests/test_config.py` : `_isolate_webhook_env` — 大文字小文字を区別せずに`DISCORD_WEBHOOK_`系の環境変数を除去する
+    - [x] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url` — 末尾スラッシュ・クエリ付きのURLも正しいと判定されることを検証し、テスト内の処理コメントを補う
+- [x] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
+  - [x] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
+  - [x] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
+  - [x] `config.py` : `load_webhook_config` — 再起動なしで反映されるのはWebhookの設定のみである旨にdocstringを修正する(大項目1のレビュー指摘)
+  - [x] `CHANGELOG.md` : Unreleasedに運用チャンネルの変更(`general`→`news`、`fx`追加)と、空値・形式不正のキーを読み飛ばす変更を追記する
+  - [x] `README.md` : Webhookの設定(`DISCORD_WEBHOOK_`系)の変更は再起動なしで次回の送信から反映されること・OS環境変数が優先されること・Webhook以外の設定(`HTTPS_PROXY`等)は既存の環境変数を上書きせず、変更の反映には再起動が必要なことを追記する
+  - レビュー指摘対応(1回目)
+    - [x] `README.md` : Webhook以外の設定の反映タイミング(新規キーは次回送信から反映、既存の環境変数の変更・削除は再起動まで反映されない)を正確に記載し、`alert`は自動送信されない旨とCLIは毎回新しいプロセスである旨を明記する
+    - [x] `config.py` : `load_webhook_config` — docstringのWebhook以外の設定の反映タイミングの記述を正確にする
+  - 対象外: テストの`general`はモック上のダミーのチャンネル名で`.env`に依存しないため変更しない
 - 将来検討（優先度低・未着手）: Embed通知対応、ファイル添付対応
 
 ---

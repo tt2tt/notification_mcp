@@ -4,9 +4,8 @@ MCPツール・CLI等の境界層から共通で呼び出され、失敗時は`N
 """
 
 import logging
-import re
 
-from notification_mcp.config import load_webhook_config
+from notification_mcp.config import is_valid_channel_name, load_webhook_config
 from notification_mcp.discord_client import send_webhook_message_with_retry
 from notification_mcp.error_handlers import reraise_as, translate_send_errors
 from notification_mcp.exceptions import (
@@ -16,9 +15,6 @@ from notification_mcp.exceptions import (
 )
 
 logger = logging.getLogger(__name__)
-
-# チャンネル名として許可する形式(.envのキー名に使える英数字・'_'と'-'のみ)
-_CHANNEL_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
 
 
 def _validate_channel(channel: str) -> None:
@@ -34,7 +30,7 @@ def _validate_channel(channel: str) -> None:
         InvalidChannelError: 英数字・`_`・`-`以外の文字を含む、または空の場合。
     """
     # 許可した文字のみで構成されていなければ、入力値を含めずに例外を送出する
-    if _CHANNEL_NAME_PATTERN.fullmatch(channel) is None:
+    if not is_valid_channel_name(channel):
         raise InvalidChannelError(
             "チャンネル名の形式が不正です(英数字・'_'・'-'のみ使用できます)。"
         )
@@ -44,11 +40,13 @@ def _validate_channel(channel: str) -> None:
 def _load_webhook_config() -> dict[str, str]:
     """Webhook設定を読み込み、`{チャンネル名: URL}`の辞書を返す。
 
+    空値・形式不正のURLは`load_webhook_config`で警告のうえ読み飛ばされる。
+
     Returns:
         チャンネル名とWebhook URLの対応表。
 
     Raises:
-        WebhookConfigError: 設定が存在しない、またはURLの形式が不正な場合。
+        WebhookConfigError: 使用できるWebhook URLが1件も設定されていない場合。
     """
     # .envから読み込んだ設定を返す(ValueErrorはデコレータで変換される)
     return load_webhook_config()
@@ -70,12 +68,15 @@ def _resolve_webhook_url(webhook_config: dict[str, str], channel: str) -> str:
     # 指定されたチャンネル名が設定済みかどうかを確認する
     webhook_url = webhook_config.get(channel)
     if webhook_url is None:
-        # 指定ミスに気付けるよう、利用可能なチャンネル名を併記する
+        # 指定ミスに気付けるよう利用可能なチャンネル名を併記し、
+        # .envのURLが空・形式不正で読み飛ばされた可能性も案内する
         channel_names = sorted(webhook_config)
         available = ", ".join(channel_names)
         raise ChannelNotConfiguredError(
             f"チャンネル '{channel}' は設定されていません。"
             f"利用可能なチャンネル: {available}"
+            "(.envに設定済みの場合は、Webhook URLが空または形式不正のため"
+            "読み飛ばされていないかログを確認してください)"
         )
 
     # 設定済みのチャンネルであれば対応するWebhook URLを返す
@@ -104,17 +105,22 @@ async def notify(channel: str, message: str) -> None:
 
     Args:
         channel: 送信先のチャンネル名(`.env`の`DISCORD_WEBHOOK_<チャンネル名>`に対応)。
+            大文字・小文字は区別しない。
         message: 送信するメッセージ本文。
 
     Raises:
         InvalidChannelError: チャンネル名の形式が不正な場合。
-        WebhookConfigError: Webhook設定の読み込みに失敗した場合。
-        ChannelNotConfiguredError: 指定チャンネルが設定されていない場合。
+        WebhookConfigError: 使用できるWebhook URLが1件も設定されていない場合。
+        ChannelNotConfiguredError: 指定チャンネルが未設定、またはURLが空・形式不正で
+            読み飛ばされた場合。
         MessageRejectedError: メッセージが文字数上限を超えている場合。
         SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
     """
     # ログや結果メッセージへ出力する前に、チャンネル名の形式を検証する
     _validate_channel(channel)
+
+    # .envのキーから作るチャンネル名は小文字化されるため、指定側も小文字にそろえる
+    channel = channel.lower()
 
     # .envから読み込んだチャンネル名とWebhook URLの対応表を取得する
     webhook_config = _load_webhook_config()

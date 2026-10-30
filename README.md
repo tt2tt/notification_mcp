@@ -41,11 +41,17 @@ copy .env.example .env
 `.env`の命名規則は `DISCORD_WEBHOOK_<チャンネル名>` です。チャンネル名は小文字化されて、MCPツールの`channel`引数と対応します。
 
 ```
-DISCORD_WEBHOOK_GENERAL=https://discord.com/api/webhooks/xxxx/xxxx
-DISCORD_WEBHOOK_ALERT=https://discord.com/api/webhooks/yyyy/yyyy
+DISCORD_WEBHOOK_NEWS=https://discord.com/api/webhooks/xxxx/xxxx
+DISCORD_WEBHOOK_FX=https://discord.com/api/webhooks/yyyy/yyyy
+DISCORD_WEBHOOK_ALERT=https://discord.com/api/webhooks/zzzz/zzzz
 ```
 
-上記の場合、`channel="general"` または `channel="alert"` で送信先を指定できます。
+上記の場合、`channel="news"`・`channel="fx"`・`channel="alert"` で送信先を指定できます(`alert` は例外時の通知先として利用者が使う想定のチャンネルです。本プログラムが例外発生時に `alert` へ自動送信することはありません)。
+
+- 値が空のキー、URLの形式が不正なキー、チャンネル名に英数字・`_`・`-` 以外を含むキーは、警告ログを出して読み飛ばされます(他のチャンネルへの送信には影響しません)。
+- `DISCORD_WEBHOOK_` 系の設定は送信のたびに `.env` から読み直すため、名称変更・追加・削除は**MCPサーバーを再起動しなくても次回の送信から反映**されます(CLIは実行のたびに新しいプロセスとして起動するため、常に最新の `.env` が使われます)。
+- 同じキーがOSの環境変数にもある場合は、OSの環境変数が優先されます。
+- `.env` に書いたWebhook以外の設定(`HTTPS_PROXY` 等)は、既存の環境変数を上書きせずに反映されます。新しく追加したキーは次回の送信から反映されますが、一度反映した値の変更・削除は、MCPサーバーを再起動するまで反映されません。
 
 `.env`にはトークンを含む機密情報が入るため、**絶対にコミットしないでください**（`.gitignore`で除外済みです）。
 
@@ -55,7 +61,7 @@ DISCORD_WEBHOOK_ALERT=https://discord.com/api/webhooks/yyyy/yyyy
 |---|---|---|
 | `send_notification` | `channel: str`, `message: str` | 指定チャンネルのWebhookへテキスト通知を送信する |
 
-- `channel` は `.env` のキー名の `<チャンネル名>` 部分を**小文字**で指定します(例: `DISCORD_WEBHOOK_GENERAL` → `general`)。
+- `channel` は `.env` のキー名の `<チャンネル名>` 部分を指定します(例: `DISCORD_WEBHOOK_NEWS` → `news`)。大文字・小文字は区別しません。
 - `channel` に使えるのは英数字・`_`・`-` のみです(それ以外を含む場合はエラーになります)。
 - 本文中の `@everyone` / `@here` による全員宛てのメンション通知は無効化されます。個別ユーザー・ロールへのメンション(`<@ユーザーID>` / `<@&ロールID>`)は通知されます。
 
@@ -105,12 +111,12 @@ AI(MCPクライアント)を介さず、バッチ・タスクスケジューラ�
 本プロジェクトの仮想環境のPythonを絶対パスで指定すれば、どのフォルダからでも実行できます。
 
 ```powershell
-C:\path\to\notification_mcp\.venv\Scripts\python.exe -m notification_mcp.cli --channel general --message "バッチ処理が完了しました"
+C:\path\to\notification_mcp\.venv\Scripts\python.exe -m notification_mcp.cli --channel news --message "バッチ処理が完了しました"
 ```
 
 | 引数 | 必須 | 説明 |
 |---|---|---|
-| `--channel` | ○ | 送信先のチャンネル名。`.env`の`DISCORD_WEBHOOK_<チャンネル名>`の`<チャンネル名>`を小文字で指定(英数字・`_`・`-`のみ) |
+| `--channel` | ○ | 送信先のチャンネル名。`.env`の`DISCORD_WEBHOOK_<チャンネル名>`の`<チャンネル名>`を指定(英数字・`_`・`-`のみ、大文字・小文字は区別しない) |
 | `--message` | ○ | 送信するメッセージ本文(2000文字以内) |
 
 `-` で始まる本文は、オプションと区別するため `--message="-完了"` のように `=` でつないで指定してください。
@@ -139,7 +145,7 @@ from notification_mcp.exceptions import NotificationError
 from notification_mcp.notifier import notify
 
 try:
-    coroutine = notify("general", "通知メッセージ")
+    coroutine = notify("news", "通知メッセージ")
     asyncio.run(coroutine)
 except NotificationError as error:
     print(f"送信に失敗しました: {error}")
