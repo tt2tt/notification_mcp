@@ -178,7 +178,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `discord_client.py` : `_WEBHOOK_SECRET_PATTERN` — バージョン付きパス(`/api/v10/webhooks/<id>/<token>`等)も伏せ字の対象にする
     - [x] `discord_client.py` : `_WebhookUrlRedactingFilter.filter` — Webhook URLを含むレコードのみ書き換え、それ以外のレコードの`msg`/`args`は変更しない
     - [x] `logging_config.py` : `setup_logging` — 自前の入口(MCPサーバー・CLI)では`httpx`/`httpcore`をWARNING以上に制限してログ量を従来どおりに戻し、誤ったコメントを修正する(伏せ字フィルターは直接呼び出し時の保険として併用)
-    - [ ] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — WebhookのIDも出力されないことを検証する
+    - [x] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — WebhookのIDも出力されないことを検証する
     - [ ] `tests/test_discord_client.py` : `test_redacting_filter_redacts_versioned_webhook_url` — バージョン付きパス・クエリ付きURLも伏せ字になり、URLを含まないレコードは変更されないことを検証する
     - [ ] `README.md` / `CHANGELOG.md` : 自前の入口ではhttpxログを抑制し、直接呼び出し時は伏せ字で出力される旨に修正する
 
