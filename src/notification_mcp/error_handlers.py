@@ -105,12 +105,14 @@ def return_error_message(
     """`NotificationError`をログ出力し、エラーメッセージ文字列として返すデコレータ。
 
     MCPツールは例外ではなく結果文字列をAIへ返すため、境界層で例外を文字列へ変換する。
+    想定外の例外はメッセージにWebhook URLを含み得るため、
+    型名のみを記録し汎用メッセージを返す。
 
     Args:
         func: 結果メッセージを返す非同期のMCPツール関数。
 
     Returns:
-        通知例外を`"エラー: ..."`形式の文字列へ変換する非同期関数。
+        例外を`"エラー: ..."`形式の文字列へ変換する非同期関数。
     """
 
     @functools.wraps(func)
@@ -121,5 +123,11 @@ def return_error_message(
             # 例外ごとのログレベルで記録し、AIへ返すエラーメッセージを組み立てる
             logger.log(error.log_level, "通知処理に失敗しました: %s", error)
             return f"エラー: {error}"
+        except Exception as error:
+            # 想定外の例外は内容を出さず、型名のみ記録して汎用メッセージを返す
+            error_type = type(error).__name__
+            logger.error("通知処理で想定外のエラーが発生しました: %s", error_type)
+            return "エラー: 通知処理で想定外のエラーが発生しました。"
 
+    # 例外を結果メッセージへ変換する関数を返す
     return wrapper

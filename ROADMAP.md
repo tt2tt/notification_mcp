@@ -105,7 +105,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
 送信処理はサービス層(`notifier.notify`)に切り出してMCPツールとCLIで共有し、MCP経由と同じ挙動(リトライ・ログ・URL非出力)を保つ。
 例外処理はデコレータ(`error_handlers.py`)に統一する。
 
-- [ ] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
+- [x] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
   - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
   - [x] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
   - [x] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
@@ -124,7 +124,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `discord_client.py` : `_resolve_wait_seconds` — 待機秒数に上限(60秒)を設け、巨大な`Retry-After`による長時間停止・`inf`による無限待機を防ぐ
     - [x] `error_handlers.py` : `reraise_as` — 例外連鎖を`from None`で切る方針に統一し、戻り値処理にコメントを追加
     - [x] `error_handlers.py` : `translate_send_errors` — 戻り値処理にコメントを追加
-    - [ ] `error_handlers.py` : `return_error_message` — 想定外の例外も汎用メッセージへ変換し(例外の型名のみログ出力)、URLを含み得る例外文字列がMCPクライアントへ渡らないようにする
+    - [x] `error_handlers.py` : `return_error_message` — 想定外の例外も汎用メッセージへ変換し(例外の型名のみログ出力)、URLを含み得る例外文字列がMCPクライアントへ渡らないようにする
 - [ ] CLIの実装 (`feature/cli`)
   - [ ] `error_handlers.py` : `return_exit_code(func)` — `NotificationError`をログ出力し、終了コード1を返すCLI用デコレータ
   - [ ] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
