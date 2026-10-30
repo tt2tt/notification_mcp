@@ -122,7 +122,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `notifier.py` : `notify` — 成功ログ出力にコメントを追加
   - レビュー指摘対応(2回目)
     - [x] `discord_client.py` : `_resolve_wait_seconds` — 待機秒数に上限(60秒)を設け、巨大な`Retry-After`による長時間停止・`inf`による無限待機を防ぐ
-    - [ ] `error_handlers.py` : `reraise_as` — 例外連鎖を`from None`で切る方針に統一し、戻り値処理にコメントを追加
+    - [x] `error_handlers.py` : `reraise_as` — 例外連鎖を`from None`で切る方針に統一し、戻り値処理にコメントを追加
     - [ ] `error_handlers.py` : `translate_send_errors` — 戻り値処理にコメントを追加
     - [ ] `error_handlers.py` : `return_error_message` — 想定外の例外も汎用メッセージへ変換し(例外の型名のみログ出力)、URLを含み得る例外文字列がMCPクライアントへ渡らないようにする
 - [ ] CLIの実装 (`feature/cli`)

@@ -36,14 +36,17 @@ def reraise_as(
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             # 指定された例外のみ捕捉し、メッセージを引き継いでtargetへ変換する
+            # (元例外をトレースバックへ出さないよう例外連鎖は切る)
             try:
                 return func(*args, **kwargs)
             except sources as error:
                 message = str(error)
-                raise target(message) from error
+                raise target(message) from None
 
+        # 例外変換処理を付与した関数を返す
         return wrapper
 
+    # 引数で指定した例外を変換するデコレータを返す
     return decorator
 
 
