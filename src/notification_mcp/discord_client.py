@@ -35,17 +35,26 @@ class _WebhookUrlRedactingFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         """ログメッセージを組み立て、Webhook URLの機密部分を伏せ字にする。
 
+        Webhook URLを含まないレコードは`msg`/`args`を変更せずにそのまま通す。
+
         Args:
             record: 出力対象のログレコード。
 
         Returns:
             常に`True`(レコード自体は破棄せず、伏せ字にして出力する)。
         """
-        # 引数を埋め込んだ最終的なメッセージに対して置換する
+        # 引数を埋め込んだ最終的なメッセージに対して、パスの接頭辞を残して置換する
         message = record.getMessage()
-        record.msg = _WEBHOOK_SECRET_PATTERN.sub("/api/webhooks/***", message)
+        redacted_message, replaced_count = _WEBHOOK_SECRET_PATTERN.subn(
+            r"\1***", message
+        )
+
+        # Webhook URLを含まないレコードは構造化情報を保つため変更しない
+        if replaced_count == 0:
+            return True
 
         # 置換済みメッセージへ再度引数が埋め込まれないよう引数を消去する
+        record.msg = redacted_message
         record.args = None
         return True
 
