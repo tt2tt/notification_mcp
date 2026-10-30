@@ -87,7 +87,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — 案内文の内容とURL本体が含まれないことも検証する
   - レビュー指摘対応(5回目)
     - [x] `config.py` : `is_valid_channel_name(channel: str) -> bool` — チャンネル名の形式(英数字・`_`・`-`)判定を`notifier`から移して共通化する
-    - [ ] `notifier.py` : `_validate_channel` — 共通化した`is_valid_channel_name`を利用し、`notifier`内の重複したパターン定義を削除する
+    - [x] `notifier.py` : `_validate_channel` — 共通化した`is_valid_channel_name`を利用し、`notifier`内の重複したパターン定義を削除する
     - [ ] `config.py` : `_parse_webhook_entry` — キーから作ったチャンネル名も`is_valid_channel_name`で検証し、不正な名前は(ログに名前を出さず)読み飛ばす
     - [ ] `config.py` : `_read_webhook_env() -> dict[str, str]` — `.env`を`dotenv_values`で毎回読み直し、OS環境変数(優先)と合わせて`DISCORD_WEBHOOK_`系の設定を返す(`os.environ`は変更しない)
     - [ ] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
