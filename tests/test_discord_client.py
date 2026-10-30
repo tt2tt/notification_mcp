@@ -16,14 +16,17 @@ _WEBHOOK_URL = "https://discord.com/api/webhooks/123456789012345678/dummy-token"
 
 @respx.mock
 async def test_send_webhook_message_posts_content_successfully():
-    """正常系ではWebhookへcontentがJSON POSTされる。"""
+    """正常系ではWebhookへcontentとメンション無効化設定がJSON POSTされる。"""
     route = respx.post(_WEBHOOK_URL).mock(return_value=httpx.Response(204))
 
     await send_webhook_message(_WEBHOOK_URL, "テストメッセージ")
 
     assert route.called
     sent_body = json.loads(route.calls.last.request.content)
-    assert sent_body == {"content": "テストメッセージ"}
+    assert sent_body == {
+        "content": "テストメッセージ",
+        "allowed_mentions": {"parse": []},
+    }
 
 
 async def test_send_webhook_message_raises_when_message_too_long():

@@ -34,9 +34,12 @@ async def send_webhook_message(
             f"メッセージが{_MAX_CONTENT_LENGTH}文字を超えています(現在{len(message)}文字)。"
         )
 
+    # 本文中の@everyone/@here等でメンション通知が飛ばないよう無効化する
+    payload = {"content": message, "allowed_mentions": {"parse": []}}
+
     # DiscordのWebhook APIにJSON形式でPOSTする(応答なし時に備えタイムアウトを設定)
     async with httpx.AsyncClient(timeout=timeout) as client:
-        response = await client.post(webhook_url, json={"content": message})
+        response = await client.post(webhook_url, json=payload)
         response.raise_for_status()
 
 
