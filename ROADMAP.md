@@ -144,7 +144,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `notifier.py` : `_validate_channel(channel: str) -> None` — チャンネル名が英数字・`_`・`-`のみで構成されているか検証し、不正なら`InvalidChannelError`を送出する(改行等によるログインジェクションを防ぐ)
     - [x] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
-  - [ ] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
+  - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
   - [ ] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`
   - [ ] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
   - [ ] `tests/test_error_handlers.py` : `test_return_exit_code_returns_one_on_error`
