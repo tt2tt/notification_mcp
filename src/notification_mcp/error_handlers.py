@@ -95,6 +95,7 @@ def translate_send_errors(
             message = str(error)
             raise MessageRejectedError(message) from None
 
+    # 例外変換処理を付与した送信関数を返す
     return wrapper
 
 
