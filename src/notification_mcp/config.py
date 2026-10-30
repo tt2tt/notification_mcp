@@ -46,6 +46,48 @@ def validate_webhook_url(url: str) -> None:
         raise ValueError("不正なDiscord Webhook URL形式です。")
 
 
+def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
+    """`DISCORD_WEBHOOK_<チャンネル名>`の1件からチャンネル名とWebhook URLを取り出す。
+
+    不正な1件のために他のチャンネルまで送信できなくなることを防ぐため、
+    使用できない設定は例外にせず、警告ログを出して読み飛ばす。
+    ログにはURL本体を含めない。
+
+    Args:
+        key: 環境変数名(`DISCORD_WEBHOOK_`で始まる)。
+        value: 環境変数の値(Webhook URL)。
+
+    Returns:
+        `(チャンネル名(小文字), 前後の空白を除いたURL)`。
+        チャンネル名が空・値が空・URL形式が不正な場合は`None`。
+    """
+    # プレフィックスを除いたチャンネル名を小文字化し、URLの前後の空白を取り除く
+    channel = key.removeprefix(_WEBHOOK_ENV_PREFIX).lower()
+    webhook_url = value.strip()
+
+    # チャンネル名が空のキー(DISCORD_WEBHOOK_のみ)は指定できないため読み飛ばす
+    if not channel:
+        logger.warning("チャンネル名が空のキーがあるため読み飛ばします。")
+        return None
+
+    # 値が空のキーは未設定とみなして読み飛ばす
+    if not webhook_url:
+        logger.warning(
+            "Webhook URLが空のため、チャンネル '%s' を読み飛ばします。", channel
+        )
+        return None
+
+    # URL形式が不正なキーは送信できないため読み飛ばす
+    if not _is_valid_webhook_url(webhook_url):
+        logger.warning(
+            "Webhook URLの形式が不正なため、チャンネル '%s' を読み飛ばします。", channel
+        )
+        return None
+
+    # 使用できる設定としてチャンネル名とURLを返す
+    return channel, webhook_url
+
+
 def load_webhook_config() -> dict[str, str]:
     """.envからチャンネル名とWebhook URLの対応表を読み込む。
 
