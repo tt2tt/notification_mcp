@@ -55,7 +55,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -92,7 +92,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `_read_webhook_env() -> dict[str, str]` — `.env`を`dotenv_values`で毎回読み直し、OS環境変数(優先)と合わせて`DISCORD_WEBHOOK_`系の設定を返す(`os.environ`は変更しない)
     - [x] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
     - [x] `tests/test_config.py` : `_isolate_webhook_env` — `dotenv_values`のモック化に変更する
-    - [ ] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する

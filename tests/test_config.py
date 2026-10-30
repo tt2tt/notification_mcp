@@ -105,3 +105,23 @@ def test_load_webhook_config_raises_when_all_entries_skipped(monkeypatch):
 
     # 例外メッセージにURL本体が含まれないことを確認する
     assert _INVALID_URL not in str(exc_info.value)
+
+
+def test_load_webhook_config_reflects_dotenv_changes(monkeypatch):
+    """.envの内容が変わると次回の読み込みで反映され、OS環境変数が優先される。"""
+    # 1回目と2回目で内容が異なる.env(名称変更・追加)を返すようにする
+    dotenv_contents = [
+        {"DISCORD_WEBHOOK_GENERAL": _VALID_URL},
+        {"DISCORD_WEBHOOK_NEWS": _VALID_URL, "DISCORD_WEBHOOK_FX": None},
+    ]
+    monkeypatch.setattr(config, "dotenv_values", lambda: dotenv_contents.pop(0))
+
+    # 1回目は変更前の.envの内容が読み込まれることを確認する
+    assert config.load_webhook_config() == {"general": _VALID_URL}
+
+    # OS環境変数にも同じキーを設定し、OS環境変数が優先されるかを確認する
+    os_url = "https://discord.com/api/webhooks/987654321098765432/os-token"
+    monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", os_url)
+
+    # 2回目は名称変更が反映され、削除されたgeneralと値のないfxは含まれないことを確認する
+    assert config.load_webhook_config() == {"news": os_url}
