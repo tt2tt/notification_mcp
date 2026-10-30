@@ -140,7 +140,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - レビュー指摘対応(2回目)
     - [x] `discord_client.py` : `send_webhook_message` — `allowed_mentions`を`{"parse": ["users", "roles"]}`とし、`@everyone`/`@here`のみ無効化して個別ユーザー・ロールへのメンション(`<@id>`/`<@&id>`)は従来どおり通知する
   - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
-    - [ ] `exceptions.py` : `InvalidChannelError` — チャンネル名の形式が不正であることを表す例外(WARNING扱い、メッセージに入力値を含めない)を追加する
+    - [x] `exceptions.py` : `InvalidChannelError` — チャンネル名の形式が不正であることを表す例外(WARNING扱い、メッセージに入力値を含めない)を追加する
     - [ ] `notifier.py` : `_validate_channel(channel: str) -> None` — チャンネル名が英数字・`_`・`-`のみで構成されているか検証し、不正なら`InvalidChannelError`を送出する(改行等によるログインジェクションを防ぐ)
     - [ ] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)

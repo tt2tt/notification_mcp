@@ -37,3 +37,13 @@ class MessageRejectedError(NotificationError):
 
 class SendFailedError(NotificationError):
     """Webhookへの送信に失敗したことを表す例外(HTTPエラー・通信エラー)。"""
+
+
+class InvalidChannelError(NotificationError):
+    """チャンネル名の形式が不正であることを表す例外。
+
+    ログインジェクションを防ぐため、メッセージには入力されたチャンネル名を含めない。
+    """
+
+    # 利用者の入力ミスであり、システム異常ではないため警告扱いとする
+    log_level: int = logging.WARNING
