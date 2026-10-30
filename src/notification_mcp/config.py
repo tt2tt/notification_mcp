@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 # .envからDISCORD_WEBHOOK_<チャンネル名>を拾うためのプレフィックス
 _WEBHOOK_ENV_PREFIX = "DISCORD_WEBHOOK_"
 
-# Discord WebhookのURL形式を検証するための正規表現(全体一致・空白を含まない)
-_WEBHOOK_URL_PATTERN = re.compile(r"https://discord(app)?\.com/api/webhooks/\d+/\S+")
+# Discord WebhookのURL形式を検証するための正規表現(全体一致で使用)
+# トークンはURLセーフな文字(英数字・'_'・'-')に限定し、ログの伏せ字処理で
+# トークンの一部が残る値(引用符等を含む値)を受け付けない。末尾の任意のクエリのみ許可する
+_WEBHOOK_URL_PATTERN = re.compile(
+    r"https://discord(app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]+(\?\S*)?"
+)
 
 # チャンネル名として許可する形式(.envのキー名に使える英数字・'_'と'-'のみ)
 _CHANNEL_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
