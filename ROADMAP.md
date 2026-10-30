@@ -46,7 +46,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] MCPサーバーの起動・ツール登録の最小骨格作成
   - [x] `server.py` : `main() -> None` — `MCPServer`を初期化し`send_notification`を`add_tool`で登録、stdioで起動するエントリポイント
 - [x] `mcp dev` / MCP Inspector で単体動作確認 → `mcp dev`はブラウザ操作が必要なため、代わりにstdioクライアントを使った検証スクリプトで確認(`list_tools`でのスキーマ確認、未設定チャンネル時のエラー、送信失敗時のHTTPエラー捕捉が正常動作することを確認済み)
-- [ ] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認 → **保留**(利用予定クライアントの登録方法が未確定のため後日実施)
+- [x] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認 → 別PCにてリリース済み(実際の通知送信を確認済み)
 
 ---
 
