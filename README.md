@@ -55,6 +55,7 @@ DISCORD_WEBHOOK_ALERT=https://discord.com/api/webhooks/yyyy/yyyy
 |---|---|---|
 | `send_notification` | `channel: str`, `message: str` | 指定チャンネルのWebhookへテキスト通知を送信する |
 
+- `channel` は `.env` のキー名の `<チャンネル名>` 部分を**小文字**で指定します(例: `DISCORD_WEBHOOK_GENERAL` → `general`)。
 - `channel` に使えるのは英数字・`_`・`-` のみです(それ以外を含む場合はエラーになります)。
 - 本文中の `@everyone` / `@here` による全員宛てのメンション通知は無効化されます。個別ユーザー・ロールへのメンション(`<@ユーザーID>` / `<@&ロールID>`)は通知されます。
 
@@ -109,18 +110,18 @@ C:\path\to\notification_mcp\.venv\Scripts\python.exe -m notification_mcp.cli --c
 
 | 引数 | 必須 | 説明 |
 |---|---|---|
-| `--channel` | ○ | 送信先のチャンネル名(`.env`の`DISCORD_WEBHOOK_<チャンネル名>`に対応) |
+| `--channel` | ○ | 送信先のチャンネル名。`.env`の`DISCORD_WEBHOOK_<チャンネル名>`の`<チャンネル名>`を小文字で指定(英数字・`_`・`-`のみ) |
 | `--message` | ○ | 送信するメッセージ本文(2000文字以内) |
 
-`-` で始まる本文は、オプションと区別するため `--message="--- 完了 ---"` のように `=` でつないで指定してください。
+`-` で始まる本文は、オプションと区別するため `--message="-完了"` のように `=` でつないで指定してください。
 
 ### 終了コード
 
 | 終了コード | 意味 |
 |---|---|
 | `0` | 送信成功 |
-| `1` | 送信失敗(未設定のチャンネル、文字数超過、HTTPエラー、通信エラー等) |
-| `2` | 引数の不足・不正 |
+| `1` | 送信失敗(チャンネル名の形式不正・未設定のチャンネル、文字数超過、HTTPエラー、通信エラー等) |
+| `2` | 引数の不足・不明なオプション(argparseによる検出) |
 
 バッチファイルでは `if errorlevel 1` 等で成否を判定できます。
 処理結果のログはMCPサーバーと同じく、標準エラー出力と `log/notification_mcp.log` に出力されます。
@@ -128,7 +129,8 @@ C:\path\to\notification_mcp\.venv\Scripts\python.exe -m notification_mcp.cli --c
 ### Pythonから直接呼び出す場合
 
 本プロジェクトの仮想環境で実行するか、呼び出し側の仮想環境に `pip install -e C:\path\to\notification_mcp` でインストールしたうえで、サービス層の `notify` を呼び出します。
-失敗時は `notification_mcp.exceptions.NotificationError` 系の例外が送出されます。
+想定される失敗(設定エラー・未設定チャンネル・文字数超過・送信失敗等)は `notification_mcp.exceptions.NotificationError` 系の例外として送出されます。
+それ以外の想定外の例外は変換されずにそのまま送出されるため、必要に応じて呼び出し側で捕捉してください(MCPツール・CLIでは境界層のデコレータが捕捉します)。
 
 ```python
 import asyncio
@@ -143,7 +145,8 @@ except NotificationError as error:
     print(f"送信に失敗しました: {error}")
 ```
 
-`.env` とログの保存先はパッケージの配置場所を基準に決まるため、`-e` を付けずに通常インストールすると `.env` が見つからない・ログを書き込めない場合があります。
+- この呼び出し方では `setup_logging()` が呼ばれないため、`log/notification_mcp.log` には出力されません。ログの出力先は呼び出し側のログ設定に従います(`httpx` のログによるWebhook URLの漏洩は、呼び出し側の設定に関わらず抑制されます)。
+- `.env` はパッケージ(`config.py`)の配置場所から親フォルダへ順に探索されます。`-e` を付けずに通常インストールすると、本プロジェクトの `.env` が見つからない、または呼び出し側プロジェクトの別の `.env` を読み込む場合があります。`-e` でのインストールを推奨します。
 
 ## 開発
 
@@ -168,8 +171,8 @@ Webhook URL等の機密情報はログに出力されない設計になってい
 
 ```
 notification_mcp/
-├── CLAUDE.md
 ├── README.md
+├── CHANGELOG.md
 ├── ROADMAP.md
 ├── pyproject.toml
 ├── .env.example
