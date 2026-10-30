@@ -149,3 +149,30 @@ def return_error_message(
 
     # 例外を結果メッセージへ変換する関数を返す
     return wrapper
+
+
+def return_exit_code(func: Callable[P, int]) -> Callable[P, int]:
+    """例外をログ出力し、終了コード1として返すCLI用デコレータ。
+
+    CLIは成否を終了コードで呼び出し元へ伝えるため、境界層で例外を終了コードへ変換する。
+    想定外の例外も含めて捕捉し、トレースバック経由でWebhook URLが出力されることを防ぐ。
+
+    Args:
+        func: 終了コードを返すCLIのメイン関数。
+
+    Returns:
+        例外発生時に終了コード1を返す関数。
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> int:
+        # 正常終了時は関数が返した終了コードをそのまま返す
+        try:
+            return func(*args, **kwargs)
+        except Exception as error:
+            # 失敗を記録し、異常終了を表す終了コードを返す
+            _log_failure(error)
+            return 1
+
+    # 例外を終了コードへ変換する関数を返す
+    return wrapper
