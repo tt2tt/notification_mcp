@@ -1,11 +1,14 @@
 """error_handlers.pyのユニットテスト。"""
 
+import logging
+
 import httpx
 import pytest
 
 from notification_mcp.error_handlers import (
     reraise_as,
     return_error_message,
+    return_exit_code,
     translate_send_errors,
 )
 from notification_mcp.exceptions import (
@@ -76,3 +79,21 @@ async def test_return_error_message_returns_prefixed_message():
     unexpected_result = await unexpected_tool()
     assert unexpected_result.startswith("エラー: ")
     assert _WEBHOOK_URL not in unexpected_result
+
+
+def test_return_exit_code_returns_one_on_error(caplog):
+    """例外発生時は終了コード1を返し、想定外の例外の内容(URL)はログに出力されない。"""
+
+    # Webhook URLを含む想定外の例外を送出するメイン関数にデコレータを適用する
+    @return_exit_code
+    def main() -> int:
+        raise RuntimeError(_WEBHOOK_URL)
+
+    # 終了コード1が返ることを確認する
+    with caplog.at_level(logging.WARNING):
+        exit_code = main()
+    assert exit_code == 1
+
+    # ログには型名のみ記録され、Webhook URLが含まれないことを確認する
+    assert "RuntimeError" in caplog.text
+    assert _WEBHOOK_URL not in caplog.text
