@@ -14,6 +14,25 @@ _WEBHOOK_ENV_PREFIX = "DISCORD_WEBHOOK_"
 # Discord WebhookのURL形式を検証するための正規表現(全体一致・空白を含まない)
 _WEBHOOK_URL_PATTERN = re.compile(r"https://discord(app)?\.com/api/webhooks/\d+/\S+")
 
+# チャンネル名として許可する形式(.envのキー名に使える英数字・'_'と'-'のみ)
+_CHANNEL_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
+
+
+def is_valid_channel_name(channel: str) -> bool:
+    """チャンネル名が許可された形式(英数字・`_`・`-`のみ、1文字以上)かを判定する。
+
+    改行・制御文字等を含む名前がログやメッセージへ出力され、
+    偽のログ行を書き込まれること(ログインジェクション)を防ぐために使用する。
+
+    Args:
+        channel: 判定するチャンネル名。
+
+    Returns:
+        許可された形式の場合は`True`。
+    """
+    # 許可した文字のみで構成されているかを全体一致で判定する
+    return _CHANNEL_NAME_PATTERN.fullmatch(channel) is not None
+
 
 def _is_valid_webhook_url(url: str) -> bool:
     """Webhook URLがDiscordの形式に一致するかを判定する。
