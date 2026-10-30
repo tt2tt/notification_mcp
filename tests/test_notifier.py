@@ -5,6 +5,7 @@ import pytest
 from notification_mcp import notifier
 from notification_mcp.exceptions import (
     ChannelNotConfiguredError,
+    InvalidChannelError,
     WebhookConfigError,
 )
 
@@ -60,3 +61,25 @@ async def test_notify_raises_webhook_config_error(monkeypatch):
     # WebhookConfigErrorへ変換されることを確認する
     with pytest.raises(WebhookConfigError):
         await notifier.notify("general", "test")
+
+
+async def test_notify_raises_for_invalid_channel_name(monkeypatch):
+    """改行等を含むチャンネル名は、設定読込前に入力値を含まない例外で拒否される。"""
+
+    # 検証より先に設定読込が行われた場合に検知できるよう、呼び出しを記録する
+    calls: list[str] = []
+
+    def fake_load() -> dict[str, str]:
+        calls.append("load")
+        return {"general": _WEBHOOK_URL}
+
+    monkeypatch.setattr(notifier, "load_webhook_config", fake_load)
+    injected_channel = "x\n2026-10-30 00:00:00 [INFO] 偽のログ行"
+
+    # InvalidChannelErrorが送出されることを確認する
+    with pytest.raises(InvalidChannelError) as exc_info:
+        await notifier.notify(injected_channel, "test")
+
+    # メッセージに入力値を含まず、設定読込も行われていないことを確認する
+    assert "偽のログ行" not in str(exc_info.value)
+    assert calls == []
