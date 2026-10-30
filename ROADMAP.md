@@ -82,7 +82,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
   - レビュー指摘対応(4回目)
     - [x] `notifier.py` : `notify` — 形式検証後にチャンネル名を小文字へ正規化し、`.env`のキー(小文字化される)と一致させる(大文字指定が必ず未設定エラーになる問題への対応)
     - [x] `tests/test_notifier.py` : `test_notify_normalizes_channel_to_lowercase` — 大文字を含むチャンネル名でも送信できることを検証する
-    - [ ] `config.py` : `_is_valid_webhook_url` — 全体一致(`fullmatch`)かつ空白を含まない形式で判定し、末尾に余計な文字が付いたURLを不正と判定する
+    - [x] `config.py` : `_is_valid_webhook_url` — 全体一致(`fullmatch`)かつ空白を含まない形式で判定し、末尾に余計な文字が付いたURLを不正と判定する
     - [ ] `notifier.py` : `_load_webhook_config` — docstringの説明文をGoogleスタイルに沿って`Returns`より前へ移動する
     - [ ] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — 案内文の内容とURL本体が含まれないことも検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)

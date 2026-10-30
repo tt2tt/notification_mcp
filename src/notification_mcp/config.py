@@ -11,10 +11,8 @@ logger = logging.getLogger(__name__)
 # .envからDISCORD_WEBHOOK_<チャンネル名>を拾うためのプレフィックス
 _WEBHOOK_ENV_PREFIX = "DISCORD_WEBHOOK_"
 
-# Discord WebhookのURL形式を検証するための正規表現
-_WEBHOOK_URL_PATTERN = re.compile(
-    r"^https://discord(app)?\.com/api/webhooks/\d+/.+$"
-)
+# Discord WebhookのURL形式を検証するための正規表現(全体一致・空白を含まない)
+_WEBHOOK_URL_PATTERN = re.compile(r"https://discord(app)?\.com/api/webhooks/\d+/\S+")
 
 
 def _is_valid_webhook_url(url: str) -> bool:
@@ -26,8 +24,8 @@ def _is_valid_webhook_url(url: str) -> bool:
     Returns:
         形式に一致する場合は`True`。
     """
-    # 正規表現に先頭から一致するかで判定する
-    return _WEBHOOK_URL_PATTERN.match(url) is not None
+    # 末尾に余計な文字が付いたURLを通さないよう、全体一致で判定する
+    return _WEBHOOK_URL_PATTERN.fullmatch(url) is not None
 
 
 def validate_webhook_url(url: str) -> None:
