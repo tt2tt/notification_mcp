@@ -44,3 +44,22 @@ def test_load_webhook_config_raises_when_no_webhooks_configured(monkeypatch):
 
     with pytest.raises(ValueError):
         config.load_webhook_config()
+
+
+def test_load_webhook_config_skips_empty_values(monkeypatch):
+    """値が空(空白のみを含む)のキーは読み飛ばされ、設定済みのチャンネルのみが返る。"""
+    # 実プロジェクトの.envを読まないようno-op化し、既存のDISCORD_WEBHOOK_系を取り除く
+    monkeypatch.setattr(config, "load_dotenv", lambda: None)
+    for key in list(os.environ):
+        if key.startswith("DISCORD_WEBHOOK_"):
+            monkeypatch.delenv(key, raising=False)
+
+    # 設定済み1件と、空値・空白のみのキーを用意する
+    monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", _VALID_URL)
+    monkeypatch.setenv("DISCORD_WEBHOOK_FX", "")
+    monkeypatch.setenv("DISCORD_WEBHOOK_ALERT", "   ")
+
+    result = config.load_webhook_config()
+
+    # 空値のキーはエラーにならず、設定済みのチャンネルのみが返ることを確認する
+    assert result == {"news": _VALID_URL}
