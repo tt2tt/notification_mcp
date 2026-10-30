@@ -46,7 +46,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] MCPサーバーの起動・ツール登録の最小骨格作成
   - [x] `server.py` : `main() -> None` — `MCPServer`を初期化し`send_notification`を`add_tool`で登録、stdioで起動するエントリポイント
 - [x] `mcp dev` / MCP Inspector で単体動作確認 → `mcp dev`はブラウザ操作が必要なため、代わりにstdioクライアントを使った検証スクリプトで確認(`list_tools`でのスキーマ確認、未設定チャンネル時のエラー、送信失敗時のHTTPエラー捕捉が正常動作することを確認済み)
-- [ ] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認 → **保留**(利用予定クライアントの登録方法が未確定のため後日実施)
+- [x] Claude Desktop / Claude Codeの設定ファイルに登録し、実際に通知が飛ぶことを確認 → 別PCにてリリース済み(実際の通知送信を確認済み)
 
 ---
 
@@ -96,6 +96,91 @@ Discord通知用のMCPサーバーをPythonで実装する。
 - [x] バージョニング・CHANGELOG整備 → Semantic Versioningを採用(`pyproject.toml`の`version = "0.1.0"`と一致)。`CHANGELOG.md`をKeep a Changelog形式で作成し、READMEからリンク
 - ~~Docker化~~ → 不要と判断(個人のローカル利用が主目的のため)
 - ~~（任意）PyPI公開 or GitHub Releasesでの配布~~ → 不要と判断
+
+---
+
+## Phase 7: CLIエントリポイントの追加
+AI(MCPクライアント)以外のプログラムやバッチ・タスクスケジューラーから、
+`.venv\Scripts\python.exe -m notification_mcp.cli --channel <チャンネル名> --message <本文>` の形で通知を送信できるようにする。
+送信処理はサービス層(`notifier.notify`)に切り出してMCPツールとCLIで共有し、MCP経由と同じ挙動(リトライ・ログ・URL非出力)を保つ。
+例外処理はデコレータ(`error_handlers.py`)に統一する。
+
+- [x] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
+  - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
+  - [x] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
+  - [x] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
+  - [x] `notifier.py` : `_load_webhook_config() -> dict[str, str]` — `load_webhook_config`を呼び、設定エラーを`WebhookConfigError`へ変換する(`reraise_as`を適用)
+  - [x] `notifier.py` : `_resolve_webhook_url(webhook_config, channel) -> str` — チャンネル名からWebhook URLを解決し、未設定なら`ChannelNotConfiguredError`を送出する
+  - [x] `notifier.py` : `_send(channel, webhook_url, message) -> None` — リトライ付きで送信する(`translate_send_errors`を適用)
+  - [x] `notifier.py` : `notify(channel: str, message: str) -> None` — 設定読込・URL解決・送信を順に行い、成功をログ出力する
+  - [x] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
+  - [x] `tools.py` : `send_notification`を`notify`呼び出しと成功メッセージ返却のみの境界層に修正(`return_error_message`を適用)。`tests/test_tools.py`のモック対象も`notifier`へ変更する
+  - レビュー指摘対応(1回目)
+    - [x] `discord_client.py` : `_resolve_wait_seconds` — 数値以外の`Retry-After`(HTTP日付形式等)は`ValueError`を出さず指数バックオフへフォールバックする(入力エラーへの誤分類を防止)
+    - [x] `error_handlers.py` : `translate_send_errors` — `httpx.InvalidURL`も`SendFailedError`へ変換し、例外連鎖を`from None`で切ってトレースバック経由のWebhook URL漏洩を防ぐ
+    - [x] `notifier.py` : `_resolve_webhook_url` — 戻り値の処理にコメントを追加
+    - [x] `notifier.py` : `notify` — 成功ログ出力にコメントを追加
+  - レビュー指摘対応(2回目)
+    - [x] `discord_client.py` : `_resolve_wait_seconds` — 待機秒数に上限(60秒)を設け、巨大な`Retry-After`による長時間停止・`inf`による無限待機を防ぐ
+    - [x] `error_handlers.py` : `reraise_as` — 例外連鎖を`from None`で切る方針に統一し、戻り値処理にコメントを追加
+    - [x] `error_handlers.py` : `translate_send_errors` — 戻り値処理にコメントを追加
+    - [x] `error_handlers.py` : `return_error_message` — 想定外の例外も汎用メッセージへ変換し(例外の型名のみログ出力)、URLを含み得る例外文字列がMCPクライアントへ渡らないようにする
+  - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
+    - [x] `discord_client.py` : `send_webhook_message_with_retry` — 待機秒数が上限(60秒)を超える場合はリトライせず即座に例外を送出する(早すぎる再送・長時間ブロック・重複通知を防ぐ)
+    - [x] `discord_client.py` : `_resolve_wait_seconds` — 上限への丸めを廃止し、サーバー指示どおりの待機秒数を返す(上限判定は呼び出し側で行う)
+- [x] CLIの実装 (`feature/cli`)
+  - [x] `error_handlers.py` : `_log_failure(error: Exception) -> None` — 失敗時のログ出力を共通化する(`NotificationError`は例外ごとのログレベルとメッセージ、想定外の例外は型名のみ)
+  - [x] `error_handlers.py` : `return_error_message` — ログ出力を`_log_failure`へ置き換える
+  - [x] `error_handlers.py` : `return_exit_code(func)` — 例外を`_log_failure`でログ出力し、終了コード1を返すCLI用デコレータ(想定外の例外も含む)
+  - [x] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
+  - [x] `cli.py` : `main(argv: list[str] | None = None) -> int` — ロギングを初期化して`notify`を実行する。終了コードは成功時0・失敗時1(`return_exit_code`を適用)
+  - レビュー指摘対応(1回目)
+    - [x] `cli.py` : `parse_args` — `-`で始まるメッセージは`--message=...`形式で渡す必要がある旨をヘルプに明記する
+    - [x] `discord_client.py` : `send_webhook_message` — `allowed_mentions`を空にして本文中の`@everyone`/`@here`等によるメンション通知を無効化する(`tests/test_discord_client.py`の送信ボディ検証も更新)
+  - レビュー指摘対応(2回目)
+    - [x] `discord_client.py` : `send_webhook_message` — `allowed_mentions`を`{"parse": ["users", "roles"]}`とし、`@everyone`/`@here`のみ無効化して個別ユーザー・ロールへのメンション(`<@id>`/`<@&id>`)は従来どおり通知する
+  - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
+    - [x] `exceptions.py` : `InvalidChannelError` — チャンネル名の形式が不正であることを表す例外(WARNING扱い、メッセージに入力値を含めない)を追加する
+    - [x] `notifier.py` : `_validate_channel(channel: str) -> None` — チャンネル名が英数字・`_`・`-`のみで構成されているか検証し、不正なら`InvalidChannelError`を送出する(改行等によるログインジェクションを防ぐ)
+    - [x] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
+- [x] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
+  - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
+  - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`
+  - [x] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
+  - [x] `tests/test_error_handlers.py` : `test_return_exit_code_returns_one_on_error`
+  - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long`
+  - [x] `tests/test_notifier.py` : `test_notify_sends_message_successfully`
+  - [x] `tests/test_notifier.py` : `test_notify_raises_for_unknown_channel`
+  - [x] `tests/test_notifier.py` : `test_notify_raises_webhook_config_error`
+  - [x] `tests/test_notifier.py` : `test_notify_raises_for_invalid_channel_name`
+  - [x] `tests/test_cli.py` : `test_parse_args_returns_channel_and_message`
+  - [x] `tests/test_cli.py` : `test_main_returns_zero_on_success`
+  - [x] `tests/test_cli.py` : `test_main_returns_one_on_failure`
+  - レビュー指摘対応(1回目)
+    - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception` — `__cause__ is None`も検証し、例外連鎖が切れていることを確実に確認する
+    - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
+    - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
+- [x] ドキュメント更新 (`docs/cli-usage`)
+  - [x] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
+  - [x] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)
+  - レビュー指摘対応(1回目)
+    - [x] `discord_client.py` : モジュール読込時に`httpx`/`httpcore`のログをWARNING以上に制限する(`setup_logging`を呼ばない直接呼び出しでもWebhook URLがログに出ないようにする)
+    - [x] `logging_config.py` : `setup_logging` — `discord_client`へ移した`httpx`/`httpcore`のログ抑制処理を削除する(重複の解消)
+    - [x] `README.md` : チャンネル名は小文字で指定する旨・不正なチャンネル名は終了コード1になる旨・直接呼び出し時の例外範囲とログ出力先・通常インストール時の挙動・`-`始まり本文の例・ディレクトリ構成を実態に合わせて修正する
+    - [x] `CHANGELOG.md` : Keep a Changelogにない「確認済み」区分を削除する
+  - レビュー指摘対応(2回目)
+    - [x] `discord_client.py` : `_WebhookUrlRedactingFilter` — ログレコード中のWebhook URLの`id/token`部分を伏せ字に置き換える`logging.Filter`を追加する
+    - [x] `discord_client.py` : `_install_log_redaction() -> None` — `httpx`ロガーへ伏せ字フィルターを登録する(ログレベル変更による抑制を廃止し、呼び出し側のログ設定を変えないようにする)
+    - [x] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — `httpx`をINFOにしてもログにWebhookトークンが出力されないことを検証する
+    - [x] `README.md` : 直接呼び出し時のログの説明を伏せ字方式に合わせて修正する
+    - [x] `CHANGELOG.md` : Security項目を伏せ字方式に合わせて修正する
+  - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
+    - [x] `discord_client.py` : `_WEBHOOK_SECRET_PATTERN` — バージョン付きパス(`/api/v10/webhooks/<id>/<token>`等)も伏せ字の対象にする
+    - [x] `discord_client.py` : `_WebhookUrlRedactingFilter.filter` — Webhook URLを含むレコードのみ書き換え、それ以外のレコードの`msg`/`args`は変更しない
+    - [x] `logging_config.py` : `setup_logging` — 自前の入口(MCPサーバー・CLI)では`httpx`/`httpcore`をWARNING以上に制限してログ量を従来どおりに戻し、誤ったコメントを修正する(伏せ字フィルターは直接呼び出し時の保険として併用)
+    - [x] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — WebhookのIDも出力されないことを検証する
+    - [x] `tests/test_discord_client.py` : `test_redacting_filter_redacts_versioned_webhook_url` — バージョン付きパス・クエリ付きURLも伏せ字になり、URLを含まないレコードは変更されないことを検証する
+    - [x] `README.md` / `CHANGELOG.md` : 自前の入口ではhttpxログを抑制し、直接呼び出し時は伏せ字で出力される旨に修正する
 
 ---
 

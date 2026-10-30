@@ -22,9 +22,13 @@ def setup_logging(level: int = logging.INFO) -> None:
         logging.StreamHandler(),
         logging.FileHandler(_LOG_FILE, encoding="utf-8"),
     ]
+    # ルートロガーに出力先とフォーマットを設定する
     logging.basicConfig(level=level, format=_LOG_FORMAT, handlers=handlers)
 
-    # httpx/httpcoreはINFOレベルでリクエストURL(Webhook URL本体)をログに出すため、
-    # Webhook URL漏洩を防ぐ目的でWARNING以上に制限する
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    # 自前の入口(MCPサーバー・CLI)では送信ごとのhttpx/httpcoreの通信ログは不要なため、
+    # WARNING以上に制限してログ量を抑える
+    # (httpxログ中のWebhook URLは、直接呼び出し時も含め
+    #  discord_clientの伏せ字フィルターで保護される)
+    for library_logger_name in ("httpx", "httpcore"):
+        library_logger = logging.getLogger(library_logger_name)
+        library_logger.setLevel(logging.WARNING)
