@@ -47,8 +47,10 @@ def _load_webhook_config() -> dict[str, str]:
     Returns:
         チャンネル名とWebhook URLの対応表。
 
+    空値・形式不正のURLは`load_webhook_config`で警告のうえ読み飛ばされる。
+
     Raises:
-        WebhookConfigError: 設定が存在しない、またはURLの形式が不正な場合。
+        WebhookConfigError: 使用できるWebhook URLが1件も設定されていない場合。
     """
     # .envから読み込んだ設定を返す(ValueErrorはデコレータで変換される)
     return load_webhook_config()
@@ -111,8 +113,9 @@ async def notify(channel: str, message: str) -> None:
 
     Raises:
         InvalidChannelError: チャンネル名の形式が不正な場合。
-        WebhookConfigError: Webhook設定の読み込みに失敗した場合。
-        ChannelNotConfiguredError: 指定チャンネルが設定されていない場合。
+        WebhookConfigError: 使用できるWebhook URLが1件も設定されていない場合。
+        ChannelNotConfiguredError: 指定チャンネルが未設定、またはURLが空・形式不正で
+            読み飛ばされた場合。
         MessageRejectedError: メッセージが文字数上限を超えている場合。
         SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
     """

@@ -76,7 +76,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_config.py` : `test_load_webhook_config_skips_invalid_entries` — 形式不正のURL・空のチャンネル名が読み飛ばされ、前後の空白が除去されることを検証する
   - レビュー指摘対応(3回目)
     - [x] `notifier.py` : `_resolve_webhook_url` — 未設定エラーのメッセージに「`.env`に設定済みの場合はURLが空・形式不正で読み飛ばされていないかログを確認する」旨の案内を追加する(形式不正が「未設定」としか表示されない問題への対応)
-    - [ ] `notifier.py` : `_load_webhook_config` / `notify` — 形式不正のURLは読み飛ばされる仕様に合わせてdocstringの`Raises`を修正する
+    - [x] `notifier.py` : `_load_webhook_config` / `notify` — 形式不正のURLは読み飛ばされる仕様に合わせてdocstringの`Raises`を修正する
     - [ ] `config.py` : `load_webhook_config` — 全件が読み飛ばされた場合も誤解のない案内文にし、不要な`f`接頭辞を外す
     - [ ] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — キーはあるが全件読み飛ばされた場合に`ValueError`になることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
