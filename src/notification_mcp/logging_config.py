@@ -22,9 +22,6 @@ def setup_logging(level: int = logging.INFO) -> None:
         logging.StreamHandler(),
         logging.FileHandler(_LOG_FILE, encoding="utf-8"),
     ]
+    # ルートロガーに出力先とフォーマットを設定する
+    # (httpx/httpcoreのURL漏洩対策はdiscord_clientのモジュール読込時に行う)
     logging.basicConfig(level=level, format=_LOG_FORMAT, handlers=handlers)
-
-    # httpx/httpcoreはINFOレベルでリクエストURL(Webhook URL本体)をログに出すため、
-    # Webhook URL漏洩を防ぐ目的でWARNING以上に制限する
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.WARNING)
