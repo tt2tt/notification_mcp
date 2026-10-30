@@ -55,6 +55,9 @@ DISCORD_WEBHOOK_ALERT=https://discord.com/api/webhooks/yyyy/yyyy
 |---|---|---|
 | `send_notification` | `channel: str`, `message: str` | 指定チャンネルのWebhookへテキスト通知を送信する |
 
+- `channel` に使えるのは英数字・`_`・`-` のみです(それ以外を含む場合はエラーになります)。
+- 本文中の `@everyone` / `@here` による全員宛てのメンション通知は無効化されます。個別ユーザー・ロールへのメンション(`<@ユーザーID>` / `<@&ロールID>`)は通知されます。
+
 ## Claude Desktop / Claude Codeへの登録
 
 MCP設定ファイルに、本プロジェクトの仮想環境のPythonでサーバーを起動するよう登録します。
@@ -95,6 +98,53 @@ claude mcp add notification-mcp -- C:\path\to\notification_mcp\.venv\Scripts\pyt
 python -m notification_mcp.server
 ```
 
+## CLIからの送信
+
+AI(MCPクライアント)を介さず、バッチ・タスクスケジューラー・他のプログラムからも同じ通知処理を呼び出せます。
+本プロジェクトの仮想環境のPythonを絶対パスで指定すれば、どのフォルダからでも実行できます。
+
+```powershell
+C:\path\to\notification_mcp\.venv\Scripts\python.exe -m notification_mcp.cli --channel general --message "バッチ処理が完了しました"
+```
+
+| 引数 | 必須 | 説明 |
+|---|---|---|
+| `--channel` | ○ | 送信先のチャンネル名(`.env`の`DISCORD_WEBHOOK_<チャンネル名>`に対応) |
+| `--message` | ○ | 送信するメッセージ本文(2000文字以内) |
+
+`-` で始まる本文は、オプションと区別するため `--message="--- 完了 ---"` のように `=` でつないで指定してください。
+
+### 終了コード
+
+| 終了コード | 意味 |
+|---|---|
+| `0` | 送信成功 |
+| `1` | 送信失敗(未設定のチャンネル、文字数超過、HTTPエラー、通信エラー等) |
+| `2` | 引数の不足・不正 |
+
+バッチファイルでは `if errorlevel 1` 等で成否を判定できます。
+処理結果のログはMCPサーバーと同じく、標準エラー出力と `log/notification_mcp.log` に出力されます。
+
+### Pythonから直接呼び出す場合
+
+本プロジェクトの仮想環境で実行するか、呼び出し側の仮想環境に `pip install -e C:\path\to\notification_mcp` でインストールしたうえで、サービス層の `notify` を呼び出します。
+失敗時は `notification_mcp.exceptions.NotificationError` 系の例外が送出されます。
+
+```python
+import asyncio
+
+from notification_mcp.exceptions import NotificationError
+from notification_mcp.notifier import notify
+
+try:
+    coroutine = notify("general", "通知メッセージ")
+    asyncio.run(coroutine)
+except NotificationError as error:
+    print(f"送信に失敗しました: {error}")
+```
+
+`.env` とログの保存先はパッケージの配置場所を基準に決まるため、`-e` を付けずに通常インストールすると `.env` が見つからない・ログを書き込めない場合があります。
+
 ## 開発
 
 ### Lint
@@ -130,12 +180,19 @@ notification_mcp/
 │   └── notification_mcp/
 │       ├── __init__.py
 │       ├── server.py           # MCPサーバーのエントリポイント
-│       ├── tools.py            # MCPツール定義
+│       ├── cli.py              # CLIのエントリポイント
+│       ├── tools.py            # MCPツール定義(境界層)
+│       ├── notifier.py         # 通知送信のサービス層(MCPツール・CLIで共有)
+│       ├── error_handlers.py   # 例外処理を共通化するデコレータ
+│       ├── exceptions.py       # 通知処理の例外クラス
 │       ├── discord_client.py   # Discord Webhookへの送信・リトライ処理
 │       ├── config.py           # 設定読込・バリデーション
 │       └── logging_config.py   # ロギング設定
 └── tests/
+    ├── test_cli.py
     ├── test_config.py
     ├── test_discord_client.py
+    ├── test_error_handlers.py
+    ├── test_notifier.py
     └── test_tools.py
 ```
