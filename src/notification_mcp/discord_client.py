@@ -17,6 +17,9 @@ _DEFAULT_TIMEOUT_SECONDS = 10.0
 # リトライ対象とするHTTPステータスコード(レート制限・サーバー側の一時的な不調)
 _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
+# リトライ1回あたりの待機秒数の上限(巨大なRetry-Afterで処理が長時間止まるのを防ぐ)
+_MAX_WAIT_SECONDS = 60.0
+
 # 秒数として解釈できるRetry-Afterヘッダーの形式(整数または小数)
 _RETRY_AFTER_SECONDS_PATTERN = re.compile(r"\d+(\.\d+)?")
 
@@ -42,6 +45,7 @@ def _resolve_wait_seconds(error: httpx.HTTPStatusError, attempt: int) -> float:
 
     `Retry-After`ヘッダーが秒数形式であればその値を優先し、
     無い場合やHTTP日付形式等の秒数として解釈できない場合は指数バックオフとする。
+    いずれの場合も待機秒数は`_MAX_WAIT_SECONDS`を上限とする。
 
     Args:
         error: リトライ対象となったHTTPステータスエラー。
@@ -53,10 +57,13 @@ def _resolve_wait_seconds(error: httpx.HTTPStatusError, attempt: int) -> float:
     # 秒数形式のRetry-Afterヘッダーがあれば、サーバーの指示に従う
     retry_after = error.response.headers.get("Retry-After")
     if retry_after is not None and _RETRY_AFTER_SECONDS_PATTERN.fullmatch(retry_after):
-        return float(retry_after)
+        wait_seconds = float(retry_after)
+    else:
+        # それ以外は指数バックオフで待機する
+        wait_seconds = 2**attempt
 
-    # それ以外は指数バックオフで待機する
-    return 2**attempt
+    # 上限を超える待機はしない(inf等の異常値もここで上限に丸める)
+    return min(wait_seconds, _MAX_WAIT_SECONDS)
 
 
 async def send_webhook_message_with_retry(
