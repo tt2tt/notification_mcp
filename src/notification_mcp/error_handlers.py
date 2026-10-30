@@ -1,10 +1,16 @@
 """例外処理を共通化するデコレータをまとめたモジュール。"""
 
 import functools
-from collections.abc import Callable
-from typing import ParamSpec, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Concatenate, ParamSpec, TypeVar
 
-from notification_mcp.exceptions import NotificationError
+import httpx
+
+from notification_mcp.exceptions import (
+    MessageRejectedError,
+    NotificationError,
+    SendFailedError,
+)
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -36,3 +42,46 @@ def reraise_as(
         return wrapper
 
     return decorator
+
+
+def translate_send_errors(
+    func: Callable[Concatenate[str, P], Awaitable[None]],
+) -> Callable[Concatenate[str, P], Awaitable[None]]:
+    """送信関数で発生した例外を、チャンネル名入りの通知例外へ変換するデコレータ。
+
+    適用する関数は第1引数にチャンネル名を受け取る必要がある。
+    `httpx`の例外メッセージにはWebhook URLが含まれるため、
+    変換後のメッセージには含めない。
+
+    Args:
+        func: 第1引数にチャンネル名を受け取る非同期の送信関数。
+
+    Returns:
+        例外変換処理を付与した非同期関数。
+
+    Raises:
+        SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
+        MessageRejectedError: メッセージが送信条件を満たさなかった場合。
+    """
+
+    @functools.wraps(func)
+    async def wrapper(channel: str, *args: P.args, **kwargs: P.kwargs) -> None:
+        try:
+            await func(channel, *args, **kwargs)
+        except httpx.HTTPStatusError as error:
+            # ステータスコードのみを利用者向けメッセージに含める
+            status_code = error.response.status_code
+            raise SendFailedError(
+                f"'{channel}' への送信に失敗しました(HTTPステータス: {status_code})"
+            ) from error
+        except httpx.HTTPError as error:
+            # 接続エラー・タイムアウト等はURLを含めず通信エラーとしてまとめる
+            raise SendFailedError(
+                f"'{channel}' への送信に失敗しました(通信エラー)"
+            ) from error
+        except ValueError as error:
+            # 文字数超過等、送信前に検出した入力エラーはメッセージを引き継ぐ
+            message = str(error)
+            raise MessageRejectedError(message) from error
+
+    return wrapper
