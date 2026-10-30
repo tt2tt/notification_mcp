@@ -99,6 +99,43 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ---
 
+## Phase 7: CLIエントリポイントの追加
+AI(MCPクライアント)以外のプログラムやバッチ・タスクスケジューラーから、
+`.venv\Scripts\python.exe -m notification_mcp.cli --channel <チャンネル名> --message <本文>` の形で通知を送信できるようにする。
+送信処理はサービス層(`notifier.notify`)に切り出してMCPツールとCLIで共有し、MCP経由と同じ挙動(リトライ・ログ・URL非出力)を保つ。
+例外処理はデコレータ(`error_handlers.py`)に統一する。
+
+- [ ] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
+  - [ ] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
+  - [ ] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
+  - [ ] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
+  - [ ] `notifier.py` : `_load_webhook_config() -> dict[str, str]` — `load_webhook_config`を呼び、設定エラーを`WebhookConfigError`へ変換する(`reraise_as`を適用)
+  - [ ] `notifier.py` : `_resolve_webhook_url(webhook_config, channel) -> str` — チャンネル名からWebhook URLを解決し、未設定なら`ChannelNotConfiguredError`を送出する
+  - [ ] `notifier.py` : `_send(channel, webhook_url, message) -> None` — リトライ付きで送信する(`translate_send_errors`を適用)
+  - [ ] `notifier.py` : `notify(channel: str, message: str) -> None` — 設定読込・URL解決・送信を順に行い、成功をログ出力する
+  - [ ] `error_handlers.py` : `return_error_message(func)` — `NotificationError`をログ出力し、`"エラー: ..."`の文字列を返すMCPツール用デコレータ
+  - [ ] `tools.py` : `send_notification`を`notify`呼び出しと成功メッセージ返却のみの境界層に修正(`return_error_message`を適用)。`tests/test_tools.py`のモック対象も`notifier`へ変更する
+- [ ] CLIの実装 (`feature/cli`)
+  - [ ] `error_handlers.py` : `return_exit_code(func)` — `NotificationError`をログ出力し、終了コード1を返すCLI用デコレータ
+  - [ ] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
+  - [ ] `cli.py` : `main(argv: list[str] | None = None) -> int` — ロギングを初期化して`notify`を実行する。終了コードは成功時0・失敗時1(`return_exit_code`を適用)
+- [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
+  - [ ] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
+  - [ ] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`
+  - [ ] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
+  - [ ] `tests/test_error_handlers.py` : `test_return_exit_code_returns_one_on_error`
+  - [ ] `tests/test_notifier.py` : `test_notify_sends_message_successfully`
+  - [ ] `tests/test_notifier.py` : `test_notify_raises_for_unknown_channel`
+  - [ ] `tests/test_notifier.py` : `test_notify_raises_webhook_config_error`
+  - [ ] `tests/test_cli.py` : `test_parse_args_returns_channel_and_message`
+  - [ ] `tests/test_cli.py` : `test_main_returns_zero_on_success`
+  - [ ] `tests/test_cli.py` : `test_main_returns_one_on_failure`
+- [ ] ドキュメント更新 (`docs/cli-usage`)
+  - [ ] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
+  - [ ] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)
+
+---
+
 ## 想定ディレクトリ構成（例）
 ```
 notification_mcp/
