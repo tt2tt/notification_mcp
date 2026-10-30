@@ -34,6 +34,7 @@ def test_reraise_as_converts_exception():
 
     # メッセージが引き継がれ、元例外がトレースバックに表示されないことを確認する
     assert str(exc_info.value) == "設定がありません"
+    assert exc_info.value.__cause__ is None
     assert exc_info.value.__suppress_context__
 
 
