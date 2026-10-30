@@ -25,11 +25,9 @@
 - HTTP日付形式など秒数以外の`Retry-After`ヘッダーで、入力エラーと誤って判定される問題を修正(指数バックオフで待機)
 
 ### Security
-- 想定外の例外・`httpx.InvalidURL`・例外連鎖(トレースバック)を経由してWebhook URLが出力される経路を遮断
+- MCPツール・CLIにおいて、想定外の例外・`httpx.InvalidURL`・例外連鎖(トレースバック)を経由してWebhook URLが出力される経路を遮断
+- `httpx`/`httpcore`のログ抑制を送信モジュール側へ移し、`notify`を直接呼び出す場合もWebhook URLがログに出力されないよう修正
 - 改行等を含むチャンネル名によるログインジェクションを防止
-
-### 確認済み
-- Claude Desktop / Claude Codeへの実登録・通知送信の動作確認(別PCにてリリース済み)
 
 ## [0.1.0] - 2026-09-23
 
