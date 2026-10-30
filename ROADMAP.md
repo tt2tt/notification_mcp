@@ -169,7 +169,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `README.md` : チャンネル名は小文字で指定する旨・不正なチャンネル名は終了コード1になる旨・直接呼び出し時の例外範囲とログ出力先・通常インストール時の挙動・`-`始まり本文の例・ディレクトリ構成を実態に合わせて修正する
     - [x] `CHANGELOG.md` : Keep a Changelogにない「確認済み」区分を削除する
   - レビュー指摘対応(2回目)
-    - [ ] `discord_client.py` : `_WebhookUrlRedactingFilter` — ログレコード中のWebhook URLの`id/token`部分を伏せ字に置き換える`logging.Filter`を追加する
+    - [x] `discord_client.py` : `_WebhookUrlRedactingFilter` — ログレコード中のWebhook URLの`id/token`部分を伏せ字に置き換える`logging.Filter`を追加する
     - [ ] `discord_client.py` : `_install_log_redaction() -> None` — `httpx`ロガーへ伏せ字フィルターを登録する(ログレベル変更による抑制を廃止し、呼び出し側のログ設定を変えないようにする)
     - [ ] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — `httpx`をINFOにしてもログにWebhookトークンが出力されないことを検証する
     - [ ] `README.md` : 直接呼び出し時のログの説明を伏せ字方式に合わせて修正する

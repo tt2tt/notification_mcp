@@ -28,6 +28,30 @@ _MAX_WAIT_SECONDS = 60.0
 # 秒数として解釈できるRetry-Afterヘッダーの形式(整数または小数)
 _RETRY_AFTER_SECONDS_PATTERN = re.compile(r"\d+(\.\d+)?")
 
+# Webhook URLのうち機密情報にあたる「/api/webhooks/<id>/<token>」部分の形式
+_WEBHOOK_SECRET_PATTERN = re.compile(r"/api/webhooks/[^\s/]+/[^\s\"'?]+")
+
+
+class _WebhookUrlRedactingFilter(logging.Filter):
+    """ログレコード中のWebhook URLの`id/token`部分を伏せ字に置き換えるフィルター。"""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """ログメッセージを組み立て、Webhook URLの機密部分を伏せ字にする。
+
+        Args:
+            record: 出力対象のログレコード。
+
+        Returns:
+            常に`True`(レコード自体は破棄せず、伏せ字にして出力する)。
+        """
+        # 引数を埋め込んだ最終的なメッセージに対して置換する
+        message = record.getMessage()
+        record.msg = _WEBHOOK_SECRET_PATTERN.sub("/api/webhooks/***", message)
+
+        # 置換済みメッセージへ再度引数が埋め込まれないよう引数を消去する
+        record.args = None
+        return True
+
 
 async def send_webhook_message(
     webhook_url: str, message: str, timeout: float = _DEFAULT_TIMEOUT_SECONDS
