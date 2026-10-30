@@ -70,3 +70,22 @@ def test_load_webhook_config_skips_empty_values(monkeypatch, caplog):
     # 読み飛ばしたチャンネル名が警告ログに記録されることを確認する
     assert "'fx'" in caplog.text
     assert "'alert'" in caplog.text
+
+
+def test_load_webhook_config_skips_invalid_entries(monkeypatch, caplog):
+    """形式不正のURL・空のチャンネル名は読み飛ばされ、URLの前後の空白は除去される。"""
+    # 前後に空白を含む正しいURL、形式不正のURL、チャンネル名が空のキーを用意する
+    monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", f"  {_VALID_URL}  ")
+    monkeypatch.setenv("DISCORD_WEBHOOK_FX", _INVALID_URL)
+    monkeypatch.setenv("DISCORD_WEBHOOK_", _VALID_URL)
+
+    with caplog.at_level(logging.WARNING, logger="notification_mcp.config"):
+        result = config.load_webhook_config()
+
+    # 正しいチャンネルのみが空白を除いたURLで返ることを確認する
+    assert result == {"news": _VALID_URL}
+
+    # 読み飛ばした理由が警告ログに記録され、URL本体は含まれないことを確認する
+    assert "'fx'" in caplog.text
+    assert "チャンネル名が空" in caplog.text
+    assert _INVALID_URL not in caplog.text
