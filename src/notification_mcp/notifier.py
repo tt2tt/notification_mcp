@@ -4,13 +4,40 @@ MCPツール・CLI等の境界層から共通で呼び出され、失敗時は`N
 """
 
 import logging
+import re
 
 from notification_mcp.config import load_webhook_config
 from notification_mcp.discord_client import send_webhook_message_with_retry
 from notification_mcp.error_handlers import reraise_as, translate_send_errors
-from notification_mcp.exceptions import ChannelNotConfiguredError, WebhookConfigError
+from notification_mcp.exceptions import (
+    ChannelNotConfiguredError,
+    InvalidChannelError,
+    WebhookConfigError,
+)
 
 logger = logging.getLogger(__name__)
+
+# チャンネル名として許可する形式(.envのキー名に使える英数字・'_'と'-'のみ)
+_CHANNEL_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]+")
+
+
+def _validate_channel(channel: str) -> None:
+    """チャンネル名の形式を検証する。
+
+    改行・制御文字等を含むチャンネル名がログや結果メッセージに出力され、
+    偽のログ行を書き込まれること(ログインジェクション)を防ぐ。
+
+    Args:
+        channel: 送信先のチャンネル名。
+
+    Raises:
+        InvalidChannelError: 英数字・`_`・`-`以外の文字を含む、または空の場合。
+    """
+    # 許可した文字のみで構成されていなければ、入力値を含めずに例外を送出する
+    if _CHANNEL_NAME_PATTERN.fullmatch(channel) is None:
+        raise InvalidChannelError(
+            "チャンネル名の形式が不正です(英数字・'_'・'-'のみ使用できます)。"
+        )
 
 
 @reraise_as(WebhookConfigError, ValueError)
