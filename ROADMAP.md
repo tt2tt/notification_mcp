@@ -153,7 +153,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `tests/test_notifier.py` : `test_notify_raises_for_unknown_channel`
   - [x] `tests/test_notifier.py` : `test_notify_raises_webhook_config_error`
   - [x] `tests/test_notifier.py` : `test_notify_raises_for_invalid_channel_name`
-  - [ ] `tests/test_cli.py` : `test_parse_args_returns_channel_and_message`
+  - [x] `tests/test_cli.py` : `test_parse_args_returns_channel_and_message`
   - [ ] `tests/test_cli.py` : `test_main_returns_zero_on_success`
   - [ ] `tests/test_cli.py` : `test_main_returns_one_on_failure`
 - [ ] ドキュメント更新 (`docs/cli-usage`)
