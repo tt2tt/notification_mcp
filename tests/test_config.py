@@ -10,6 +10,19 @@ _VALID_URL = "https://discord.com/api/webhooks/123456789012345678/dummy-token"
 _INVALID_URL = "https://example.com/not-a-webhook"
 
 
+@pytest.fixture(autouse=True)
+def _isolate_webhook_env(monkeypatch):
+    """テストが実プロジェクトの.envや開発環境の環境変数に依存しないよう分離する。"""
+    # load_dotenv()は呼び出し元ディレクトリから親をたどって実プロジェクトの.envを
+    # 見つけてしまうため、no-op化してos.environのみを対象にする
+    monkeypatch.setattr(config, "load_dotenv", lambda: None)
+
+    # 環境変数に残っているDISCORD_WEBHOOK_系をすべて取り除く
+    for key in list(os.environ):
+        if key.startswith("DISCORD_WEBHOOK_"):
+            monkeypatch.delenv(key, raising=False)
+
+
 def test_validate_webhook_url_accepts_valid_url():
     """正しい形式のDiscord Webhook URLはエラーにならない。"""
     config.validate_webhook_url(_VALID_URL)  # 例外が発生しなければ成功
@@ -23,37 +36,25 @@ def test_validate_webhook_url_rejects_invalid_url():
 
 def test_load_webhook_config_returns_channel_url_dict(monkeypatch):
     """DISCORD_WEBHOOK_プレフィックスの環境変数から{チャンネル名: URL}が得られる。"""
-    # load_dotenv()は呼び出し元ディレクトリから親をたどって実プロジェクトの.envを
-    # 見つけてしまうため、テストではno-op化してos.environのみを対象にする
-    monkeypatch.setattr(config, "load_dotenv", lambda: None)
+    # 2チャンネル分のWebhook URLを設定する
     monkeypatch.setenv("DISCORD_WEBHOOK_GENERAL", _VALID_URL)
     monkeypatch.setenv("DISCORD_WEBHOOK_ALERT", _VALID_URL)
 
     result = config.load_webhook_config()
 
+    # チャンネル名が小文字化された対応表が返ることを確認する
     assert result == {"general": _VALID_URL, "alert": _VALID_URL}
 
 
-def test_load_webhook_config_raises_when_no_webhooks_configured(monkeypatch):
+def test_load_webhook_config_raises_when_no_webhooks_configured():
     """DISCORD_WEBHOOK_で始まる環境変数が1件もなければValueErrorになる。"""
-    monkeypatch.setattr(config, "load_dotenv", lambda: None)
-    # 環境変数に残っているDISCORD_WEBHOOK_系をすべて取り除く
-    for key in list(os.environ):
-        if key.startswith("DISCORD_WEBHOOK_"):
-            monkeypatch.delenv(key, raising=False)
-
+    # フィクスチャで全件除去済みの状態で読み込むとValueErrorになることを確認する
     with pytest.raises(ValueError):
         config.load_webhook_config()
 
 
 def test_load_webhook_config_skips_empty_values(monkeypatch):
     """値が空(空白のみを含む)のキーは読み飛ばされ、設定済みのチャンネルのみが返る。"""
-    # 実プロジェクトの.envを読まないようno-op化し、既存のDISCORD_WEBHOOK_系を取り除く
-    monkeypatch.setattr(config, "load_dotenv", lambda: None)
-    for key in list(os.environ):
-        if key.startswith("DISCORD_WEBHOOK_"):
-            monkeypatch.delenv(key, raising=False)
-
     # 設定済み1件と、空値・空白のみのキーを用意する
     monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", _VALID_URL)
     monkeypatch.setenv("DISCORD_WEBHOOK_FX", "")
