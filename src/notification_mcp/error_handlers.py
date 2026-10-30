@@ -54,7 +54,7 @@ def translate_send_errors(
 
     適用する関数は第1引数にチャンネル名を受け取る必要がある。
     `httpx`の例外メッセージにはWebhook URLが含まれるため、
-    変換後のメッセージには含めない。
+    変換後のメッセージには含めず、トレースバック経由の漏洩を防ぐため例外連鎖も切る。
 
     Args:
         func: 第1引数にチャンネル名を受け取る非同期の送信関数。
@@ -76,16 +76,21 @@ def translate_send_errors(
             status_code = error.response.status_code
             raise SendFailedError(
                 f"'{channel}' への送信に失敗しました(HTTPステータス: {status_code})"
-            ) from error
-        except httpx.HTTPError as error:
+            ) from None
+        except httpx.HTTPError:
             # 接続エラー・タイムアウト等はURLを含めず通信エラーとしてまとめる
             raise SendFailedError(
                 f"'{channel}' への送信に失敗しました(通信エラー)"
-            ) from error
+            ) from None
+        except httpx.InvalidURL:
+            # HTTPErrorを継承しないURL解析エラーも、URLを含めず送信失敗として扱う
+            raise SendFailedError(
+                f"'{channel}' への送信に失敗しました(Webhook URLの形式が不正です)"
+            ) from None
         except ValueError as error:
             # 文字数超過等、送信前に検出した入力エラーはメッセージを引き継ぐ
             message = str(error)
-            raise MessageRejectedError(message) from error
+            raise MessageRejectedError(message) from None
 
     return wrapper
 
