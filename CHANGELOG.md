@@ -8,8 +8,28 @@
 
 ## [Unreleased]
 
-### 未着手
-- Claude Desktop / Claude Codeへの実登録・動作確認(利用クライアント確定後に実施予定)
+リリース時に`0.2.0`として公開予定。
+
+### Added
+- コマンドラインから通知を送信するCLI `python -m notification_mcp.cli --channel <チャンネル名> --message <本文>` を追加(終了コード: 成功0・送信失敗1・引数不正2)
+- 通知送信のサービス層 `notifier.notify(channel, message)` を追加し、MCPツールとCLIで共有(失敗時は`NotificationError`系の例外を送出)
+- 通知処理の例外クラス(`exceptions.py`)と、例外処理を共通化するデコレータ(`error_handlers.py`)を追加
+- `error_handlers`/`notifier`/`cli`のユニットテストを追加
+
+### Changed
+- 本文中の`@everyone`/`@here`による全員宛てのメンション通知を無効化(個別ユーザー・ロールへのメンションは従来どおり通知)
+- `Retry-After`の指示が60秒を超える場合は、リトライせずに送信失敗として扱うよう変更
+- チャンネル名に使える文字を英数字・`_`・`-`に限定
+
+### Fixed
+- HTTP日付形式など秒数以外の`Retry-After`ヘッダーで、入力エラーと誤って判定される問題を修正(指数バックオフで待機)
+
+### Security
+- 想定外の例外・`httpx.InvalidURL`・例外連鎖(トレースバック)を経由してWebhook URLが出力される経路を遮断
+- 改行等を含むチャンネル名によるログインジェクションを防止
+
+### 確認済み
+- Claude Desktop / Claude Codeへの実登録・通知送信の動作確認(別PCにてリリース済み)
 
 ## [0.1.0] - 2026-09-23
 
