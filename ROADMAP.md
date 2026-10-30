@@ -160,9 +160,14 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception` — `__cause__ is None`も検証し、例外連鎖が切れていることを確実に確認する
     - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
     - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
-- [x] ドキュメント更新 (`docs/cli-usage`)
+- [ ] ドキュメント更新 (`docs/cli-usage`)
   - [x] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
   - [x] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)
+  - レビュー指摘対応(1回目)
+    - [ ] `discord_client.py` : モジュール読込時に`httpx`/`httpcore`のログをWARNING以上に制限する(`setup_logging`を呼ばない直接呼び出しでもWebhook URLがログに出ないようにする)
+    - [ ] `logging_config.py` : `setup_logging` — `discord_client`へ移した`httpx`/`httpcore`のログ抑制処理を削除する(重複の解消)
+    - [ ] `README.md` : チャンネル名は小文字で指定する旨・不正なチャンネル名は終了コード1になる旨・直接呼び出し時の例外範囲とログ出力先・通常インストール時の挙動・`-`始まり本文の例・ディレクトリ構成を実態に合わせて修正する
+    - [ ] `CHANGELOG.md` : Keep a Changelogにない「確認済み」区分を削除する
 
 ---
 
