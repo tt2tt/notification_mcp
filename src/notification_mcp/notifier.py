@@ -6,7 +6,8 @@ MCPツール・CLI等の境界層から共通で呼び出され、失敗時は`N
 import logging
 
 from notification_mcp.config import load_webhook_config
-from notification_mcp.error_handlers import reraise_as
+from notification_mcp.discord_client import send_webhook_message_with_retry
+from notification_mcp.error_handlers import reraise_as, translate_send_errors
 from notification_mcp.exceptions import ChannelNotConfiguredError, WebhookConfigError
 
 logger = logging.getLogger(__name__)
@@ -50,3 +51,20 @@ def _resolve_webhook_url(webhook_config: dict[str, str], channel: str) -> str:
             f"利用可能なチャンネル: {available}"
         )
     return webhook_url
+
+
+@translate_send_errors
+async def _send(channel: str, webhook_url: str, message: str) -> None:
+    """Webhookへリトライ付きでメッセージを送信する。
+
+    Args:
+        channel: 送信先のチャンネル名(例外メッセージ用)。
+        webhook_url: 送信先のWebhook URL。
+        message: 送信するメッセージ本文。
+
+    Raises:
+        SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
+        MessageRejectedError: メッセージが文字数上限を超えている場合。
+    """
+    # 送信時の例外はデコレータでチャンネル名入りの通知例外へ変換される
+    await send_webhook_message_with_retry(webhook_url, message)
