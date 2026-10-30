@@ -139,13 +139,12 @@ def return_error_message(
         try:
             return await func(*args, **kwargs)
         except NotificationError as error:
-            # 例外ごとのログレベルで記録し、AIへ返すエラーメッセージを組み立てる
-            logger.log(error.log_level, "通知処理に失敗しました: %s", error)
+            # 失敗を記録し、URLを含まない通知例外のメッセージをAIへ返す
+            _log_failure(error)
             return f"エラー: {error}"
         except Exception as error:
-            # 想定外の例外は内容を出さず、型名のみ記録して汎用メッセージを返す
-            error_type = type(error).__name__
-            logger.error("通知処理で想定外のエラーが発生しました: %s", error_type)
+            # 想定外の例外は内容を出さず、汎用メッセージを返す
+            _log_failure(error)
             return "エラー: 通知処理で想定外のエラーが発生しました。"
 
     # 例外を結果メッセージへ変換する関数を返す
