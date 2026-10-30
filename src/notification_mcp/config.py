@@ -119,8 +119,9 @@ def load_webhook_config() -> dict[str, str]:
     # 使用できる設定が1件もなければ、設定方法を案内する例外を送出する
     if not webhook_config:
         raise ValueError(
-            f"使用できるWebhook URLが1件も設定されていません。"
-            f"'.env'に{_WEBHOOK_ENV_PREFIX}<チャンネル名>を追加してください。"
+            "使用できるWebhook URLが1件も設定されていません。"
+            f"'.env'に{_WEBHOOK_ENV_PREFIX}<チャンネル名>を追加するか、"
+            "既存の値が空・形式不正でないか確認してください。"
         )
 
     return webhook_config
