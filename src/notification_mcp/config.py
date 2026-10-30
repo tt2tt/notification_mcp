@@ -91,15 +91,14 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
 def load_webhook_config() -> dict[str, str]:
     """.envからチャンネル名とWebhook URLの対応表を読み込む。
 
-    値が空(空白のみを含む)のキーは未設定とみなして警告ログを出し、読み飛ばす。
-    1つの未設定チャンネルのために、他の設定済みチャンネルまで送信できなくなることを防ぐ。
+    チャンネル名が空・値が空・URL形式が不正なキーは警告ログを出して読み飛ばし、
+    不正な1件のために他の設定済みチャンネルまで送信できなくなることを防ぐ。
 
     Returns:
         チャンネル名(小文字)とWebhook URLの対応表。
 
     Raises:
-        ValueError: 有効なWebhook URLが1件も設定されていない場合、
-            またはURLの形式が不正な場合。
+        ValueError: 使用できるWebhook URLが1件も設定されていない場合。
     """
     # プロセス起動時に.envを読み込み、環境変数として展開する
     load_dotenv()
@@ -109,21 +108,18 @@ def load_webhook_config() -> dict[str, str]:
     for key, value in os.environ.items():
         if not key.startswith(_WEBHOOK_ENV_PREFIX):
             continue
-        channel = key.removeprefix(_WEBHOOK_ENV_PREFIX).lower()
 
-        # 値が空のキーは未設定とみなし、警告のうえ読み飛ばす
-        if not value.strip():
-            logger.warning(
-                "Webhook URLが空のため、チャンネル '%s' を読み飛ばします。", channel
-            )
+        # 1件ごとに解析し、使用できない設定は読み飛ばす
+        entry = _parse_webhook_entry(key, value)
+        if entry is None:
             continue
+        channel, webhook_url = entry
+        webhook_config[channel] = webhook_url
 
-        validate_webhook_url(value)
-        webhook_config[channel] = value
-
+    # 使用できる設定が1件もなければ、設定方法を案内する例外を送出する
     if not webhook_config:
         raise ValueError(
-            f"Webhook URLが1件も設定されていません。"
+            f"使用できるWebhook URLが1件も設定されていません。"
             f"'.env'に{_WEBHOOK_ENV_PREFIX}<チャンネル名>を追加してください。"
         )
 
