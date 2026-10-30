@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 
 import httpx
 import pytest
@@ -101,3 +102,19 @@ async def test_send_webhook_message_with_retry_gives_up_when_retry_after_too_lon
     # 待機せず、初回の1回のみ送信した(早すぎる再送をしていない)ことを確認する
     assert sleeps == []
     assert route.call_count == 1
+
+
+@respx.mock
+async def test_httpx_request_log_redacts_webhook_url(caplog):
+    """httpxのログをINFOで出力しても、Webhookのトークンは伏せ字になる。"""
+    # 正常応答を返すようモック化する
+    route = respx.post(_WEBHOOK_URL)
+    route.mock(return_value=httpx.Response(204))
+
+    # 呼び出し側がhttpxのログをINFOで出力する設定にした状態で送信する
+    with caplog.at_level(logging.INFO, logger="httpx"):
+        await send_webhook_message(_WEBHOOK_URL, "ログ確認")
+
+    # リクエストログは出力されるが、トークンは含まれないことを確認する
+    assert "/api/webhooks/***" in caplog.text
+    assert "dummy-token" not in caplog.text
