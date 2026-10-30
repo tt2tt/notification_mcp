@@ -25,9 +25,18 @@ def _isolate_webhook_env(monkeypatch):
             monkeypatch.delenv(key, raising=False)
 
 
-def test_validate_webhook_url_accepts_valid_url():
-    """正しい形式のDiscord Webhook URLはエラーにならない。"""
-    config.validate_webhook_url(_VALID_URL)  # 例外が発生しなければ成功
+@pytest.mark.parametrize(
+    "url",
+    [
+        _VALID_URL,
+        f"{_VALID_URL}/",
+        f"{_VALID_URL}?wait=true",
+    ],
+)
+def test_validate_webhook_url_accepts_valid_url(url):
+    """正しい形式のWebhook URL(末尾スラッシュ・クエリ付きを含む)はエラーにならない。"""
+    # 例外が発生しなければ成功とする
+    config.validate_webhook_url(url)
 
 
 def test_validate_webhook_url_rejects_invalid_url():
@@ -42,6 +51,7 @@ def test_load_webhook_config_returns_channel_url_dict(monkeypatch):
     monkeypatch.setenv("DISCORD_WEBHOOK_GENERAL", _VALID_URL)
     monkeypatch.setenv("DISCORD_WEBHOOK_ALERT", _VALID_URL)
 
+    # 設定を読み込む
     result = config.load_webhook_config()
 
     # チャンネル名が小文字化された対応表が返ることを確認する
@@ -154,6 +164,7 @@ def test_load_webhook_config_exports_non_webhook_settings(monkeypatch):
     }
     monkeypatch.setattr(config, "dotenv_values", lambda: dotenv_content)
 
+    # 設定を読み込む(Webhook以外の設定が環境変数へ反映される)
     config.load_webhook_config()
 
     # 新規の設定は反映され、既存の環境変数は上書きされないことを確認する

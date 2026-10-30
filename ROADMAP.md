@@ -55,7 +55,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -105,7 +105,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン末尾のスラッシュ1つを許可し、以前は受け付けていた末尾`/`付きURLが読み飛ばされる回帰を解消する
     - [x] `config.py` : `_is_webhook_key(key: str) -> bool` — 大文字小文字を区別しないプレフィックス判定を共通化し、3か所の重複を解消する
     - [x] `tests/test_config.py` : `_isolate_webhook_env` — 大文字小文字を区別せずに`DISCORD_WEBHOOK_`系の環境変数を除去する
-    - [ ] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url` — 末尾スラッシュ・クエリ付きのURLも正しいと判定されることを検証し、テスト内の処理コメントを補う
+    - [x] `tests/test_config.py` : `test_validate_webhook_url_accepts_valid_url` — 末尾スラッシュ・クエリ付きのURLも正しいと判定されることを検証し、テスト内の処理コメントを補う
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
