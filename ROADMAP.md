@@ -95,7 +95,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
   - レビュー指摘対応(6回目)
     - [x] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン部分をURLセーフな文字(英数字・`_`・`-`)に限定し、任意のクエリのみ許可する(伏せ字パターンで一部が残る値を受け付けないようにする)
-    - [ ] `config.py` : `_export_non_webhook_env(dotenv_entries) -> None` — `.env`のWebhook以外の設定(`HTTPS_PROXY`等)を、既存の環境変数を上書きせずに`os.environ`へ反映する(`load_dotenv`廃止による回帰の解消)
+    - [x] `config.py` : `_export_non_webhook_env(dotenv_entries) -> None` — `.env`のWebhook以外の設定(`HTTPS_PROXY`等)を、既存の環境変数を上書きせずに`os.environ`へ反映する(`load_dotenv`廃止による回帰の解消)
     - [ ] `config.py` : `_read_webhook_env` — `.env`のキーのプレフィックスを大文字小文字を区別せず判定し、`_export_non_webhook_env`を呼び出す。処理ごとのコメントを補う
     - [ ] `config.py` : `load_webhook_config` — 処理ごとのコメントを補う
     - [ ] `tests/test_config.py` : `test_load_webhook_config_accepts_lowercase_dotenv_keys` — `.env`の小文字キーも読み込まれることを検証する

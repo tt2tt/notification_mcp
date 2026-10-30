@@ -110,6 +110,26 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
     return channel, webhook_url
 
 
+def _export_non_webhook_env(dotenv_entries: dict[str, str | None]) -> None:
+    """`.env`のWebhook以外の設定を、既存の環境変数を上書きせずに`os.environ`へ反映する。
+
+    `HTTPS_PROXY`等、`httpx`等のライブラリが環境変数から読む設定を`.env`に書けるようにする
+    (従来の`load_dotenv()`と同じく、既に設定されている環境変数は変更しない)。
+    Webhookの設定は送信のたびに読み直すため、`os.environ`へは反映しない。
+
+    Args:
+        dotenv_entries: `dotenv_values()`で読み込んだ`.env`の内容。
+    """
+    for key, value in dotenv_entries.items():
+        # Webhookの設定と、値のない行は反映対象外とする
+        upper_key = key.upper()
+        if upper_key.startswith(_WEBHOOK_ENV_PREFIX) or value is None:
+            continue
+
+        # 既に設定されている環境変数は上書きしない
+        os.environ.setdefault(key, value)
+
+
 def _read_webhook_env() -> dict[str, str]:
     """`.env`とOS環境変数から`DISCORD_WEBHOOK_`で始まる設定を読み込む。
 
