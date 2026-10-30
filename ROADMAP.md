@@ -52,13 +52,13 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ## Phase 3: 機能拡張
 通知先の切り替えは、`config.py`が`DISCORD_WEBHOOK_`で始まるキーをすべて読み込む既存実装で対応済みのため、コード変更は不要。
-今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。
+今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は例外時の通知で使用するため残す。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
 - [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [ ] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [ ] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
-  - [ ] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`へ更新する(設定ファイルのため、実施方法は着手前にユーザーへ確認)
+  - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
   - [ ] 動作確認 : CLIで`news`/`fx`へ送信できること、`general`が未設定チャンネルのエラー(終了コード1)になることを確認する(実チャンネルへ投稿するため、実施前にユーザーへ確認)
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
