@@ -132,7 +132,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `error_handlers.py` : `_log_failure(error: Exception) -> None` — 失敗時のログ出力を共通化する(`NotificationError`は例外ごとのログレベルとメッセージ、想定外の例外は型名のみ)
   - [x] `error_handlers.py` : `return_error_message` — ログ出力を`_log_failure`へ置き換える
   - [x] `error_handlers.py` : `return_exit_code(func)` — 例外を`_log_failure`でログ出力し、終了コード1を返すCLI用デコレータ(想定外の例外も含む)
-  - [ ] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
+  - [x] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
   - [ ] `cli.py` : `main(argv: list[str] | None = None) -> int` — ロギングを初期化して`notify`を実行する。終了コードは成功時0・失敗時1(`return_exit_code`を適用)
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
   - [ ] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
