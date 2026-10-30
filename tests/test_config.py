@@ -125,3 +125,14 @@ def test_load_webhook_config_reflects_dotenv_changes(monkeypatch):
 
     # 2回目は名称変更が反映され、削除されたgeneralと値のないfxは含まれないことを確認する
     assert config.load_webhook_config() == {"news": os_url}
+
+
+def test_load_webhook_config_accepts_lowercase_dotenv_keys(monkeypatch):
+    """.envのキーが小文字で書かれていても、Webhookの設定として読み込まれる。"""
+    # 小文字のキーのみを含む.envの内容を返すようにする
+    monkeypatch.setattr(
+        config, "dotenv_values", lambda: {"discord_webhook_news": _VALID_URL}
+    )
+
+    # 小文字のキーもチャンネルとして読み込まれることを確認する
+    assert config.load_webhook_config() == {"news": _VALID_URL}
