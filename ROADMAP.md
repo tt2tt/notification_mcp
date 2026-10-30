@@ -56,8 +56,8 @@ Discord通知用のMCPサーバーをPythonで実装する。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
 - [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
-  - [ ] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
-  - [ ] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
+  - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
+  - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
   - [ ] 動作確認 : CLIで`news`/`fx`へ送信できること、`general`が未設定チャンネルのエラー(終了コード1)になることを確認する(実チャンネルへ投稿するため、実施前にユーザーへ確認)
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
