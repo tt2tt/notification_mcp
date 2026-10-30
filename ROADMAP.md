@@ -52,14 +52,18 @@ Discord通知用のMCPサーバーをPythonで実装する。
 
 ## Phase 3: 機能拡張
 通知先の切り替えは、`config.py`が`DISCORD_WEBHOOK_`で始まるキーをすべて読み込む既存実装で対応済みのため、コード変更は不要。
-今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は例外時の通知で使用するため残す。
+今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
   - [x] 動作確認 : CLIで`news`/`fx`へ送信できること、`general`が未設定チャンネルのエラー(終了コード1)になることを確認する(実チャンネルへ投稿するため、実施前にユーザーへ確認)
+  - レビュー指摘対応(1回目)
+    - [x] `ROADMAP.md` : `alert`の用途の記載を事実に合わせて修正する(自動送信処理は存在しない旨を明記)
+    - [ ] `.env.example` : 上書きで失われた説明コメント(命名規則・小文字の`channel`との対応・Webhook URLの取得手順・使わないチャンネルの行は削除する旨)を新たに記載する
+    - [ ] `config.py` : `load_webhook_config` — 値が空のキーが1つでもあると全チャンネルが`ValueError`で送信不能になる問題への対応(ルール上読み込み禁止のファイルのため、対応方法はユーザー判断)
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
