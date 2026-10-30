@@ -25,7 +25,7 @@ async def test_send_webhook_message_posts_content_successfully():
     sent_body = json.loads(route.calls.last.request.content)
     assert sent_body == {
         "content": "テストメッセージ",
-        "allowed_mentions": {"parse": []},
+        "allowed_mentions": {"parse": ["users", "roles"]},
     }
 
 
