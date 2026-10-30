@@ -99,6 +99,25 @@ def translate_send_errors(
     return wrapper
 
 
+def _log_failure(error: Exception) -> None:
+    """境界層で捕捉した例外をログ出力する。
+
+    `NotificationError`は例外ごとのログレベルでメッセージを記録する。
+    想定外の例外はメッセージにWebhook URLを含み得るため、型名のみを記録する。
+
+    Args:
+        error: 境界層で捕捉した例外。
+    """
+    # 通知例外はURLを含まないメッセージのため、そのまま記録する
+    if isinstance(error, NotificationError):
+        logger.log(error.log_level, "通知処理に失敗しました: %s", error)
+        return
+
+    # 想定外の例外は内容を出さず、型名のみ記録する
+    error_type = type(error).__name__
+    logger.error("通知処理で想定外のエラーが発生しました: %s", error_type)
+
+
 def return_error_message(
     func: Callable[P, Awaitable[str]],
 ) -> Callable[P, Awaitable[str]]:
