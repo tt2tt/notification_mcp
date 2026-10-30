@@ -143,7 +143,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `exceptions.py` : `InvalidChannelError` — チャンネル名の形式が不正であることを表す例外(WARNING扱い、メッセージに入力値を含めない)を追加する
     - [x] `notifier.py` : `_validate_channel(channel: str) -> None` — チャンネル名が英数字・`_`・`-`のみで構成されているか検証し、不正なら`InvalidChannelError`を送出する(改行等によるログインジェクションを防ぐ)
     - [x] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
-- [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
+- [x] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
   - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
   - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`
   - [x] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
@@ -159,7 +159,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - レビュー指摘対応(1回目)
     - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception` — `__cause__ is None`も検証し、例外連鎖が切れていることを確実に確認する
     - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
-    - [ ] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
+    - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
 - [ ] ドキュメント更新 (`docs/cli-usage`)
   - [ ] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
   - [ ] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)

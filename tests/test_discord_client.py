@@ -1,5 +1,6 @@
 """discord_client.pyのユニットテスト。"""
 
+import asyncio
 import json
 
 import httpx
@@ -76,16 +77,27 @@ async def test_send_webhook_message_with_retry_raises_after_max_retries():
 
 
 @respx.mock
-async def test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long():
-    """Retry-Afterが待機上限を超える場合、リトライせず即座に例外が送出される。"""
+async def test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long(
+    monkeypatch,
+):
+    """Retry-Afterが待機上限を超える場合、待機・リトライせず即座に例外が送出される。"""
+    # 上限判定が壊れた場合にテストが長時間止まらないよう、待機処理を記録のみに置き換える
+    sleeps: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
+
     # 上限(60秒)を超えるRetry-Afterを返す429応答を用意する
-    route = respx.post(_WEBHOOK_URL).mock(
-        return_value=httpx.Response(429, headers={"Retry-After": "300"})
-    )
+    response = httpx.Response(429, headers={"Retry-After": "300"})
+    route = respx.post(_WEBHOOK_URL)
+    route.mock(return_value=response)
 
     # リトライせずにHTTPStatusErrorが送出されることを確認する
     with pytest.raises(httpx.HTTPStatusError):
         await send_webhook_message_with_retry(_WEBHOOK_URL, "test", max_retries=3)
 
-    # 早すぎる再送をしていない(初回の1回のみ送信した)ことを確認する
+    # 待機せず、初回の1回のみ送信した(早すぎる再送をしていない)ことを確認する
+    assert sleeps == []
     assert route.call_count == 1
