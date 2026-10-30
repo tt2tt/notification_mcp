@@ -160,7 +160,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception` — `__cause__ is None`も検証し、例外連鎖が切れていることを確実に確認する
     - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
     - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
-- [ ] ドキュメント更新 (`docs/cli-usage`)
+- [x] ドキュメント更新 (`docs/cli-usage`)
   - [x] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
   - [x] `CHANGELOG.md` : CLI追加をUnreleasedに追記(リリース時に`0.2.0`へ)
   - レビュー指摘対応(1回目)
@@ -180,7 +180,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `logging_config.py` : `setup_logging` — 自前の入口(MCPサーバー・CLI)では`httpx`/`httpcore`をWARNING以上に制限してログ量を従来どおりに戻し、誤ったコメントを修正する(伏せ字フィルターは直接呼び出し時の保険として併用)
     - [x] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — WebhookのIDも出力されないことを検証する
     - [x] `tests/test_discord_client.py` : `test_redacting_filter_redacts_versioned_webhook_url` — バージョン付きパス・クエリ付きURLも伏せ字になり、URLを含まないレコードは変更されないことを検証する
-    - [ ] `README.md` / `CHANGELOG.md` : 自前の入口ではhttpxログを抑制し、直接呼び出し時は伏せ字で出力される旨に修正する
+    - [x] `README.md` / `CHANGELOG.md` : 自前の入口ではhttpxログを抑制し、直接呼び出し時は伏せ字で出力される旨に修正する
 
 ---
 

@@ -145,7 +145,7 @@ except NotificationError as error:
     print(f"送信に失敗しました: {error}")
 ```
 
-- この呼び出し方では `setup_logging()` が呼ばれないため、`log/notification_mcp.log` には出力されません。ログの出力先は呼び出し側のログ設定に従います。`httpx` のリクエストログに含まれるWebhook URLは、`/api/webhooks/***` のように伏せ字にして出力されます(呼び出し側のログレベル設定は変更しません)。
+- この呼び出し方では `setup_logging()` が呼ばれないため、`log/notification_mcp.log` には出力されません。ログの出力先は呼び出し側のログ設定に従います。`httpx` のリクエストログに含まれるWebhook URLは、ID・トークン部分を `/api/webhooks/***` のように伏せ字にして出力されます(バージョン付きの `/api/v10/webhooks/...` 形式も対象です。呼び出し側のログレベル設定は変更しません)。
 - `.env` はパッケージ(`config.py`)の配置場所から親フォルダへ順に探索されます。`-e` を付けずに通常インストールすると、本プロジェクトの `.env` が見つからない、または呼び出し側プロジェクトの別の `.env` を読み込む場合があります。`-e` でのインストールを推奨します。
 
 ## 開発
@@ -165,7 +165,7 @@ pytest
 ### ログ
 
 実行ログは標準エラー出力と `log/notification_mcp.log` の両方に出力されます。
-Webhook URL等の機密情報はログに出力されない設計になっています(`httpx` のリクエストログは、URLのID・トークン部分を伏せ字にして出力されます)。
+Webhook URL等の機密情報はログに出力されない設計になっています。MCPサーバー・CLIでは `httpx`/`httpcore` の通信ログをWARNING以上に制限しています。
 
 ## ディレクトリ構成
 
