@@ -73,3 +73,19 @@ async def test_send_webhook_message_with_retry_raises_after_max_retries():
 
     # 初回 + リトライ2回 = 合計3回試行する
     assert route.call_count == 3
+
+
+@respx.mock
+async def test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long():
+    """Retry-Afterが待機上限を超える場合、リトライせず即座に例外が送出される。"""
+    # 上限(60秒)を超えるRetry-Afterを返す429応答を用意する
+    route = respx.post(_WEBHOOK_URL).mock(
+        return_value=httpx.Response(429, headers={"Retry-After": "300"})
+    )
+
+    # リトライせずにHTTPStatusErrorが送出されることを確認する
+    with pytest.raises(httpx.HTTPStatusError):
+        await send_webhook_message_with_retry(_WEBHOOK_URL, "test", max_retries=3)
+
+    # 早すぎる再送をしていない(初回の1回のみ送信した)ことを確認する
+    assert route.call_count == 1
