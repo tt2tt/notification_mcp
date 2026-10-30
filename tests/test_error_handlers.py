@@ -58,6 +58,10 @@ async def test_translate_send_errors_converts_http_status_error():
     assert "404" in message
     assert _WEBHOOK_URL not in message
 
+    # URLを含む元例外がトレースバックに表示されないよう連鎖が切れていることを確認する
+    assert exc_info.value.__cause__ is None
+    assert exc_info.value.__suppress_context__
+
 
 async def test_return_error_message_returns_prefixed_message():
     """通知例外は「エラー: 」付きの文字列、想定外の例外は汎用メッセージとして返る。"""

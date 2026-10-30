@@ -158,7 +158,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `tests/test_cli.py` : `test_main_returns_one_on_failure`
   - レビュー指摘対応(1回目)
     - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception` — `__cause__ is None`も検証し、例外連鎖が切れていることを確実に確認する
-    - [ ] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
+    - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error` — 例外連鎖が切れていること(`__cause__ is None`/`__suppress_context__`)を検証する
     - [ ] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long` — `asyncio.sleep`をモック化して待機しないことを検証し、関数呼び出しのネストを解消する
 - [ ] ドキュメント更新 (`docs/cli-usage`)
   - [ ] `README.md` : CLIの使い方(絶対パスでの実行例、終了コード)とディレクトリ構成を追記
