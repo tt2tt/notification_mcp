@@ -89,3 +89,14 @@ def test_load_webhook_config_skips_invalid_entries(monkeypatch, caplog):
     assert "'fx'" in caplog.text
     assert "チャンネル名が空" in caplog.text
     assert _INVALID_URL not in caplog.text
+
+
+def test_load_webhook_config_raises_when_all_entries_skipped(monkeypatch):
+    """キーはあっても全件が空値・形式不正で読み飛ばされた場合はValueErrorになる。"""
+    # 空値と形式不正のキーのみを設定する
+    monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", "")
+    monkeypatch.setenv("DISCORD_WEBHOOK_FX", _INVALID_URL)
+
+    # 使用できる設定がないためValueErrorになることを確認する
+    with pytest.raises(ValueError):
+        config.load_webhook_config()
