@@ -55,7 +55,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -93,6 +93,14 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
     - [x] `tests/test_config.py` : `_isolate_webhook_env` — `dotenv_values`のモック化に変更する
     - [x] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
+  - レビュー指摘対応(6回目)
+    - [ ] `config.py` : `_WEBHOOK_URL_PATTERN` — トークン部分をURLセーフな文字(英数字・`_`・`-`)に限定し、任意のクエリのみ許可する(伏せ字パターンで一部が残る値を受け付けないようにする)
+    - [ ] `config.py` : `_export_non_webhook_env(dotenv_entries) -> None` — `.env`のWebhook以外の設定(`HTTPS_PROXY`等)を、既存の環境変数を上書きせずに`os.environ`へ反映する(`load_dotenv`廃止による回帰の解消)
+    - [ ] `config.py` : `_read_webhook_env` — `.env`のキーのプレフィックスを大文字小文字を区別せず判定し、`_export_non_webhook_env`を呼び出す。処理ごとのコメントを補う
+    - [ ] `config.py` : `load_webhook_config` — 処理ごとのコメントを補う
+    - [ ] `tests/test_config.py` : `test_load_webhook_config_accepts_lowercase_dotenv_keys` — `.env`の小文字キーも読み込まれることを検証する
+    - [ ] `tests/test_config.py` : `test_load_webhook_config_exports_non_webhook_settings` — Webhook以外の設定が既存値を上書きせず環境変数へ反映されることを検証する
+    - [ ] `tests/test_config.py` : `test_validate_webhook_url_rejects_unsafe_token` — トークンに引用符等を含むURLが不正と判定されることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
