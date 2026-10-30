@@ -94,4 +94,5 @@ async def notify(channel: str, message: str) -> None:
     # リトライ付きでWebhookへ送信する
     await _send(channel, webhook_url, message)
 
+    # 送信成功を記録する(Webhook URLは出力しない)
     logger.info("'%s' へ通知を送信しました。", channel)
