@@ -23,8 +23,10 @@ _MAX_WAIT_SECONDS = 60.0
 # 秒数として解釈できるRetry-Afterヘッダーの形式(整数または小数)
 _RETRY_AFTER_SECONDS_PATTERN = re.compile(r"\d+(\.\d+)?")
 
-# Webhook URLのうち機密情報にあたる「/api/webhooks/<id>/<token>」部分の形式
-_WEBHOOK_SECRET_PATTERN = re.compile(r"/api/webhooks/[^\s/]+/[^\s\"'?]+")
+# Webhook URLのうち機密情報にあたる「<id>/<token>」部分の形式
+# (バージョン付きパス「/api/v10/webhooks/...」も対象とし、
+#  1つ目のグループでパスの接頭辞を保持する)
+_WEBHOOK_SECRET_PATTERN = re.compile(r"(/api/(?:v\d+/)?webhooks/)[^\s/]+/[^\s\"'?]+")
 
 
 class _WebhookUrlRedactingFilter(logging.Filter):

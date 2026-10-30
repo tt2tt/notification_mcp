@@ -175,7 +175,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `README.md` : 直接呼び出し時のログの説明を伏せ字方式に合わせて修正する
     - [x] `CHANGELOG.md` : Security項目を伏せ字方式に合わせて修正する
   - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
-    - [ ] `discord_client.py` : `_WEBHOOK_SECRET_PATTERN` — バージョン付きパス(`/api/v10/webhooks/<id>/<token>`等)も伏せ字の対象にする
+    - [x] `discord_client.py` : `_WEBHOOK_SECRET_PATTERN` — バージョン付きパス(`/api/v10/webhooks/<id>/<token>`等)も伏せ字の対象にする
     - [ ] `discord_client.py` : `_WebhookUrlRedactingFilter.filter` — Webhook URLを含むレコードのみ書き換え、それ以外のレコードの`msg`/`args`は変更しない
     - [ ] `logging_config.py` : `setup_logging` — 自前の入口(MCPサーバー・CLI)では`httpx`/`httpcore`をWARNING以上に制限してログ量を従来どおりに戻し、誤ったコメントを修正する(伏せ字フィルターは直接呼び出し時の保険として併用)
     - [ ] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — WebhookのIDも出力されないことを検証する
