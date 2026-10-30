@@ -5,6 +5,7 @@ import pytest
 from notification_mcp import notifier
 from notification_mcp.exceptions import (
     ChannelNotConfiguredError,
+    WebhookConfigError,
 )
 
 _WEBHOOK_URL = "https://discord.com/api/webhooks/123456789012345678/dummy-token"
@@ -45,3 +46,17 @@ async def test_notify_raises_for_unknown_channel(monkeypatch):
     message = str(exc_info.value)
     assert "general" in message
     assert _WEBHOOK_URL not in message
+
+
+async def test_notify_raises_webhook_config_error(monkeypatch):
+    """設定読込でValueErrorが発生すると、WebhookConfigErrorへ変換されて送出される。"""
+
+    # 設定が1件もない状態を模してValueErrorを送出させる
+    def fake_load() -> dict[str, str]:
+        raise ValueError("Webhook URLが1件も設定されていません。")
+
+    monkeypatch.setattr(notifier, "load_webhook_config", fake_load)
+
+    # WebhookConfigErrorへ変換されることを確認する
+    with pytest.raises(WebhookConfigError):
+        await notifier.notify("general", "test")
