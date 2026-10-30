@@ -98,5 +98,8 @@ def test_load_webhook_config_raises_when_all_entries_skipped(monkeypatch):
     monkeypatch.setenv("DISCORD_WEBHOOK_FX", _INVALID_URL)
 
     # 使用できる設定がないためValueErrorになることを確認する
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="空・形式不正でないか確認") as exc_info:
         config.load_webhook_config()
+
+    # 例外メッセージにURL本体が含まれないことを確認する
+    assert _INVALID_URL not in str(exc_info.value)

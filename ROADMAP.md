@@ -55,7 +55,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -84,7 +84,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_notifier.py` : `test_notify_normalizes_channel_to_lowercase` — 大文字を含むチャンネル名でも送信できることを検証する
     - [x] `config.py` : `_is_valid_webhook_url` — 全体一致(`fullmatch`)かつ空白を含まない形式で判定し、末尾に余計な文字が付いたURLを不正と判定する
     - [x] `notifier.py` : `_load_webhook_config` — docstringの説明文をGoogleスタイルに沿って`Returns`より前へ移動する
-    - [ ] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — 案内文の内容とURL本体が含まれないことも検証する
+    - [x] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — 案内文の内容とURL本体が含まれないことも検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
