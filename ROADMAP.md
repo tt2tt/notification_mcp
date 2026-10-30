@@ -146,7 +146,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
   - [x] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
   - [x] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`
-  - [ ] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
+  - [x] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
   - [ ] `tests/test_error_handlers.py` : `test_return_exit_code_returns_one_on_error`
   - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long`
   - [ ] `tests/test_notifier.py` : `test_notify_sends_message_successfully`

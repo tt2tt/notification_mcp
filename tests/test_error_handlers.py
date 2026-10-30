@@ -5,9 +5,11 @@ import pytest
 
 from notification_mcp.error_handlers import (
     reraise_as,
+    return_error_message,
     translate_send_errors,
 )
 from notification_mcp.exceptions import (
+    ChannelNotConfiguredError,
     SendFailedError,
     WebhookConfigError,
 )
@@ -51,3 +53,26 @@ async def test_translate_send_errors_converts_http_status_error():
     assert "general" in message
     assert "404" in message
     assert _WEBHOOK_URL not in message
+
+
+async def test_return_error_message_returns_prefixed_message():
+    """通知例外は「エラー: 」付きの文字列、想定外の例外は汎用メッセージとして返る。"""
+
+    # 通知例外を送出するツール関数にデコレータを適用する
+    @return_error_message
+    async def notification_tool() -> str:
+        raise ChannelNotConfiguredError("チャンネル 'x' は設定されていません。")
+
+    # Webhook URLを含む想定外の例外を送出するツール関数にデコレータを適用する
+    @return_error_message
+    async def unexpected_tool() -> str:
+        raise RuntimeError(_WEBHOOK_URL)
+
+    # 通知例外のメッセージが「エラー: 」付きで返ることを確認する
+    result = await notification_tool()
+    assert result == "エラー: チャンネル 'x' は設定されていません。"
+
+    # 想定外の例外は内容(URL)を含まない汎用メッセージで返ることを確認する
+    unexpected_result = await unexpected_tool()
+    assert unexpected_result.startswith("エラー: ")
+    assert _WEBHOOK_URL not in unexpected_result
