@@ -185,13 +185,15 @@ def load_webhook_config() -> dict[str, str]:
     # .envとOS環境変数からDISCORD_WEBHOOK_系の設定を読み込む
     webhook_env = _read_webhook_env()
 
+    # チャンネル名をキーにした対応表を用意する
     webhook_config: dict[str, str] = {}
-    # チャンネル名をキーにした辞書を作る
     for key, value in webhook_env.items():
         # 1件ごとに解析し、使用できない設定は読み飛ばす
         entry = _parse_webhook_entry(key, value)
         if entry is None:
             continue
+
+        # 解析結果のチャンネル名とURLを対応表へ登録する
         channel, webhook_url = entry
         webhook_config[channel] = webhook_url
 
@@ -203,4 +205,5 @@ def load_webhook_config() -> dict[str, str]:
             "既存の値が空・形式不正でないか確認してください。"
         )
 
+    # 使用できるチャンネルの対応表を返す
     return webhook_config
