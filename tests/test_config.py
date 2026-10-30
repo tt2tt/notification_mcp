@@ -1,5 +1,6 @@
 """config.pyのユニットテスト。"""
 
+import logging
 import os
 
 import pytest
@@ -53,14 +54,19 @@ def test_load_webhook_config_raises_when_no_webhooks_configured():
         config.load_webhook_config()
 
 
-def test_load_webhook_config_skips_empty_values(monkeypatch):
+def test_load_webhook_config_skips_empty_values(monkeypatch, caplog):
     """値が空(空白のみを含む)のキーは読み飛ばされ、設定済みのチャンネルのみが返る。"""
     # 設定済み1件と、空値・空白のみのキーを用意する
     monkeypatch.setenv("DISCORD_WEBHOOK_NEWS", _VALID_URL)
     monkeypatch.setenv("DISCORD_WEBHOOK_FX", "")
     monkeypatch.setenv("DISCORD_WEBHOOK_ALERT", "   ")
 
-    result = config.load_webhook_config()
+    with caplog.at_level(logging.WARNING, logger="notification_mcp.config"):
+        result = config.load_webhook_config()
 
     # 空値のキーはエラーにならず、設定済みのチャンネルのみが返ることを確認する
     assert result == {"news": _VALID_URL}
+
+    # 読み飛ばしたチャンネル名が警告ログに記録されることを確認する
+    assert "'fx'" in caplog.text
+    assert "'alert'" in caplog.text
