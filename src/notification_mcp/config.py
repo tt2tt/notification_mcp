@@ -17,12 +17,32 @@ _WEBHOOK_URL_PATTERN = re.compile(
 )
 
 
+def _is_valid_webhook_url(url: str) -> bool:
+    """Webhook URLがDiscordの形式に一致するかを判定する。
+
+    Args:
+        url: 判定するWebhook URL。
+
+    Returns:
+        形式に一致する場合は`True`。
+    """
+    # 正規表現に先頭から一致するかで判定する
+    return _WEBHOOK_URL_PATTERN.match(url) is not None
+
+
 def validate_webhook_url(url: str) -> None:
     """Webhook URLの形式を検証し、不正であれば例外を送出する。
 
     例外メッセージはログ等に記録される可能性があるため、URL本体は含めない。
+
+    Args:
+        url: 検証するWebhook URL。
+
+    Raises:
+        ValueError: URLの形式が不正な場合。
     """
-    if not _WEBHOOK_URL_PATTERN.match(url):
+    # 形式に一致しなければ、URL本体を含めずに例外を送出する
+    if not _is_valid_webhook_url(url):
         raise ValueError("不正なDiscord Webhook URL形式です。")
 
 

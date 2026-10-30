@@ -68,7 +68,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `.env.example` : 空値のキーは読み飛ばされる仕様に合わせて注意書きを修正する
   - レビュー指摘対応(2回目)
     - [x] `ROADMAP.md` : 「コード変更は不要」の記述を、設定読込の不具合修正を行う旨に修正する
-    - [ ] `config.py` : `_is_valid_webhook_url(url: str) -> bool` — URL形式の判定を切り出し、`validate_webhook_url`からも利用する
+    - [x] `config.py` : `_is_valid_webhook_url(url: str) -> bool` — URL形式の判定を切り出し、`validate_webhook_url`からも利用する
     - [ ] `config.py` : `_parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None` — 1件のキーからチャンネル名とURL(前後の空白を除去)を取り出す。チャンネル名が空・値が空・URL形式が不正な場合は警告ログを出して`None`を返す
     - [ ] `config.py` : `load_webhook_config` — 1件ごとの解析を`_parse_webhook_entry`へ委譲し、不正な1件のために他チャンネルが送信不能にならないようにする
     - [ ] `tests/test_config.py` : `_isolate_webhook_env` — `load_dotenv`のno-op化と既存の`DISCORD_WEBHOOK_`系環境変数の除去を行うautouseフィクスチャに共通化する
