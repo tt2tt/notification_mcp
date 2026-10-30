@@ -76,15 +76,16 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
 
     Returns:
         `(チャンネル名(小文字), 前後の空白を除いたURL)`。
-        チャンネル名が空・値が空・URL形式が不正な場合は`None`。
+        チャンネル名の形式が不正(空を含む)・値が空・URL形式が不正な場合は`None`。
     """
     # プレフィックスを除いたチャンネル名を小文字化し、URLの前後の空白を取り除く
     channel = key.removeprefix(_WEBHOOK_ENV_PREFIX).lower()
     webhook_url = value.strip()
 
-    # チャンネル名が空のキー(DISCORD_WEBHOOK_のみ)は指定できないため読み飛ばす
-    if not channel:
-        logger.warning("チャンネル名が空のキーがあるため読み飛ばします。")
+    # 指定できない形式のチャンネル名(空を含む)は読み飛ばす
+    # (ログインジェクションを防ぐため、ログに名前は出力しない)
+    if not is_valid_channel_name(channel):
+        logger.warning("チャンネル名の形式が不正なキーがあるため読み飛ばします。")
         return None
 
     # 値が空のキーは未設定とみなして読み飛ばす
@@ -108,7 +109,7 @@ def _parse_webhook_entry(key: str, value: str) -> tuple[str, str] | None:
 def load_webhook_config() -> dict[str, str]:
     """.envからチャンネル名とWebhook URLの対応表を読み込む。
 
-    チャンネル名が空・値が空・URL形式が不正なキーは警告ログを出して読み飛ばし、
+    チャンネル名の形式が不正・値が空・URL形式が不正なキーは警告ログを出して読み飛ばし、
     不正な1件のために他の設定済みチャンネルまで送信できなくなることを防ぐ。
 
     Returns:
