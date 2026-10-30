@@ -69,7 +69,22 @@ def _resolve_wait_seconds(error: httpx.HTTPStatusError, attempt: int) -> float:
 async def send_webhook_message_with_retry(
     webhook_url: str, message: str, max_retries: int = 3
 ) -> None:
-    """一時的なエラー時に指数バックオフでリトライしながらWebhookへ送信する。"""
+    """一時的なエラー時に指数バックオフでリトライしながらWebhookへ送信する。
+
+    待機秒数が`_MAX_WAIT_SECONDS`を超える場合は、指示より早い再送や
+    長時間のブロックを避けるため、リトライせずに例外を送出する。
+
+    Args:
+        webhook_url: 送信先のWebhook URL。
+        message: 送信するメッセージ本文。
+        max_retries: 初回送信後にリトライする最大回数。
+
+    Raises:
+        httpx.HTTPStatusError: リトライ対象外のエラー、リトライ上限到達、
+            または待機秒数が上限を超えた場合。
+        httpx.TransportError: 通信エラーがリトライ上限まで続いた場合。
+        ValueError: メッセージが文字数上限を超えている場合。
+    """
     for attempt in range(max_retries + 1):
         try:
             await send_webhook_message(webhook_url, message)
@@ -81,6 +96,17 @@ async def send_webhook_message_with_retry(
             if is_last_attempt or not is_retryable:
                 raise
             wait_seconds = _resolve_wait_seconds(error, attempt)
+
+            # 待機秒数が上限を超える場合は、早すぎる再送を避けるためリトライを諦める
+            if wait_seconds > _MAX_WAIT_SECONDS:
+                logger.warning(
+                    "待機秒数が上限を超えるためリトライを中止します"
+                    "(HTTPステータス: %d、指示された待機: %.1f秒、上限: %.1f秒)",
+                    error.response.status_code,
+                    wait_seconds,
+                    _MAX_WAIT_SECONDS,
+                )
+                raise
             logger.warning(
                 "送信に失敗したためリトライします"
                 "(試行 %d/%d、HTTPステータス: %d、%.1f秒後に再送信)",
