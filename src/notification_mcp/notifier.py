@@ -50,6 +50,8 @@ def _resolve_webhook_url(webhook_config: dict[str, str], channel: str) -> str:
             f"チャンネル '{channel}' は設定されていません。"
             f"利用可能なチャンネル: {available}"
         )
+
+    # 設定済みのチャンネルであれば対応するWebhook URLを返す
     return webhook_url
 
 
