@@ -172,7 +172,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `discord_client.py` : `_WebhookUrlRedactingFilter` — ログレコード中のWebhook URLの`id/token`部分を伏せ字に置き換える`logging.Filter`を追加する
     - [x] `discord_client.py` : `_install_log_redaction() -> None` — `httpx`ロガーへ伏せ字フィルターを登録する(ログレベル変更による抑制を廃止し、呼び出し側のログ設定を変えないようにする)
     - [x] `tests/test_discord_client.py` : `test_httpx_request_log_redacts_webhook_url` — `httpx`をINFOにしてもログにWebhookトークンが出力されないことを検証する
-    - [ ] `README.md` : 直接呼び出し時のログの説明を伏せ字方式に合わせて修正する
+    - [x] `README.md` : 直接呼び出し時のログの説明を伏せ字方式に合わせて修正する
     - [ ] `CHANGELOG.md` : Security項目を伏せ字方式に合わせて修正する
 
 ---
