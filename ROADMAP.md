@@ -135,7 +135,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
   - [x] `cli.py` : `main(argv: list[str] | None = None) -> int` — ロギングを初期化して`notify`を実行する。終了コードは成功時0・失敗時1(`return_exit_code`を適用)
   - レビュー指摘対応(1回目)
-    - [ ] `cli.py` : `parse_args` — `-`で始まるメッセージは`--message=...`形式で渡す必要がある旨をヘルプに明記する
+    - [x] `cli.py` : `parse_args` — `-`で始まるメッセージは`--message=...`形式で渡す必要がある旨をヘルプに明記する
     - [ ] `discord_client.py` : `send_webhook_message` — `allowed_mentions`を空にして本文中の`@everyone`/`@here`等によるメンション通知を無効化する(`tests/test_discord_client.py`の送信ボディ検証も更新)
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
   - [ ] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`

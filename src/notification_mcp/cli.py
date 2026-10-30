@@ -37,7 +37,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--message",
         required=True,
-        help="送信するメッセージ本文(2000文字以内)",
+        help=(
+            "送信するメッセージ本文(2000文字以内)。"
+            "'-'で始まる本文は --message=\"-本文\" の形式で指定する"
+        ),
     )
 
     # 引数を解析して返す(不正な引数の場合はargparseが使い方を表示して終了する)
