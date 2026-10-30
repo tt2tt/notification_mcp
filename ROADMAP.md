@@ -65,6 +65,7 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `.env.example` : 上書きで失われた説明コメント(命名規則・小文字の`channel`との対応・Webhook URLの取得手順・使わないチャンネルの行は削除する旨)を新たに記載する
     - [x] `config.py` : `load_webhook_config` — 値が空(空白のみを含む)のキーは警告ログを出して読み飛ばし、他のチャンネルは送信できるようにする(ユーザー許可のうえ今回に限り`config.py`を読み込み・変更)
     - [x] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 空値のキーが読み飛ばされ、設定済みのチャンネルのみが返ることを検証する
+    - [x] `.env.example` : 空値のキーは読み飛ばされる仕様に合わせて注意書きを修正する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
