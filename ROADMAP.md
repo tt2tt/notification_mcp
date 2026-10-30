@@ -128,7 +128,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
     - [x] `discord_client.py` : `send_webhook_message_with_retry` — 待機秒数が上限(60秒)を超える場合はリトライせず即座に例外を送出する(早すぎる再送・長時間ブロック・重複通知を防ぐ)
     - [x] `discord_client.py` : `_resolve_wait_seconds` — 上限への丸めを廃止し、サーバー指示どおりの待機秒数を返す(上限判定は呼び出し側で行う)
-- [ ] CLIの実装 (`feature/cli`)
+- [x] CLIの実装 (`feature/cli`)
   - [x] `error_handlers.py` : `_log_failure(error: Exception) -> None` — 失敗時のログ出力を共通化する(`NotificationError`は例外ごとのログレベルとメッセージ、想定外の例外は型名のみ)
   - [x] `error_handlers.py` : `return_error_message` — ログ出力を`_log_failure`へ置き換える
   - [x] `error_handlers.py` : `return_exit_code(func)` — 例外を`_log_failure`でログ出力し、終了コード1を返すCLI用デコレータ(想定外の例外も含む)
@@ -142,7 +142,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
     - [x] `exceptions.py` : `InvalidChannelError` — チャンネル名の形式が不正であることを表す例外(WARNING扱い、メッセージに入力値を含めない)を追加する
     - [x] `notifier.py` : `_validate_channel(channel: str) -> None` — チャンネル名が英数字・`_`・`-`のみで構成されているか検証し、不正なら`InvalidChannelError`を送出する(改行等によるログインジェクションを防ぐ)
-    - [ ] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
+    - [x] `notifier.py` : `notify` — 設定読込より前に`_validate_channel`を呼び出す
 - [ ] テスト追加(Discord API呼び出しはモック化) (`test/notifier-cli`)
   - [ ] `tests/test_error_handlers.py` : `test_reraise_as_converts_exception`
   - [ ] `tests/test_error_handlers.py` : `test_translate_send_errors_converts_http_status_error`

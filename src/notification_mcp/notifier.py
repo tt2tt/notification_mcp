@@ -107,11 +107,15 @@ async def notify(channel: str, message: str) -> None:
         message: 送信するメッセージ本文。
 
     Raises:
+        InvalidChannelError: チャンネル名の形式が不正な場合。
         WebhookConfigError: Webhook設定の読み込みに失敗した場合。
         ChannelNotConfiguredError: 指定チャンネルが設定されていない場合。
         MessageRejectedError: メッセージが文字数上限を超えている場合。
         SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
     """
+    # ログや結果メッセージへ出力する前に、チャンネル名の形式を検証する
+    _validate_channel(channel)
+
     # .envから読み込んだチャンネル名とWebhook URLの対応表を取得する
     webhook_config = _load_webhook_config()
 
