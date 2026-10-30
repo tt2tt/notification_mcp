@@ -1,9 +1,12 @@
 """Webhook設定の読み込み・検証を行うモジュール。"""
 
+import logging
 import os
 import re
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # .envからDISCORD_WEBHOOK_<チャンネル名>を拾うためのプレフィックス
 _WEBHOOK_ENV_PREFIX = "DISCORD_WEBHOOK_"
@@ -24,7 +27,18 @@ def validate_webhook_url(url: str) -> None:
 
 
 def load_webhook_config() -> dict[str, str]:
-    """.envからチャンネル名とWebhook URLの対応表を読み込む。"""
+    """.envからチャンネル名とWebhook URLの対応表を読み込む。
+
+    値が空(空白のみを含む)のキーは未設定とみなして警告ログを出し、読み飛ばす。
+    1つの未設定チャンネルのために、他の設定済みチャンネルまで送信できなくなることを防ぐ。
+
+    Returns:
+        チャンネル名(小文字)とWebhook URLの対応表。
+
+    Raises:
+        ValueError: 有効なWebhook URLが1件も設定されていない場合、
+            またはURLの形式が不正な場合。
+    """
     # プロセス起動時に.envを読み込み、環境変数として展開する
     load_dotenv()
 
@@ -34,6 +48,14 @@ def load_webhook_config() -> dict[str, str]:
         if not key.startswith(_WEBHOOK_ENV_PREFIX):
             continue
         channel = key.removeprefix(_WEBHOOK_ENV_PREFIX).lower()
+
+        # 値が空のキーは未設定とみなし、警告のうえ読み飛ばす
+        if not value.strip():
+            logger.warning(
+                "Webhook URLが空のため、チャンネル '%s' を読み飛ばします。", channel
+            )
+            continue
+
         validate_webhook_url(value)
         webhook_config[channel] = value
 
