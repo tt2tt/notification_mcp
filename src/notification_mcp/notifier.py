@@ -44,10 +44,10 @@ def _validate_channel(channel: str) -> None:
 def _load_webhook_config() -> dict[str, str]:
     """Webhook設定を読み込み、`{チャンネル名: URL}`の辞書を返す。
 
+    空値・形式不正のURLは`load_webhook_config`で警告のうえ読み飛ばされる。
+
     Returns:
         チャンネル名とWebhook URLの対応表。
-
-    空値・形式不正のURLは`load_webhook_config`で警告のうえ読み飛ばされる。
 
     Raises:
         WebhookConfigError: 使用できるWebhook URLが1件も設定されていない場合。
