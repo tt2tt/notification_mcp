@@ -8,11 +8,6 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-# httpx/httpcoreはINFOレベルでリクエストURL(Webhook URL本体)をログに出すため、
-# 呼び出し側のログ設定に関わらずURLが漏洩しないようWARNING以上に制限する
-for _logger_name in ("httpx", "httpcore"):
-    logging.getLogger(_logger_name).setLevel(logging.WARNING)
-
 # Discordの仕様上、メッセージ本文の最大文字数
 _MAX_CONTENT_LENGTH = 2000
 
@@ -51,6 +46,28 @@ class _WebhookUrlRedactingFilter(logging.Filter):
         # 置換済みメッセージへ再度引数が埋め込まれないよう引数を消去する
         record.args = None
         return True
+
+
+def _install_log_redaction() -> None:
+    """`httpx`ロガーへWebhook URLの伏せ字フィルターを登録する。
+
+    `httpx`はINFOレベルでリクエストURL(Webhook URL本体)をログに出すため、
+    呼び出し側のログレベル設定を変えずに、出力内容からトークンを取り除く。
+    同じフィルターが登録済みの場合は重複して登録しない。
+    """
+    # 既に伏せ字フィルターが登録されていれば何もしない(モジュール再読込時の重複防止)
+    httpx_logger = logging.getLogger("httpx")
+    for existing_filter in httpx_logger.filters:
+        if isinstance(existing_filter, _WebhookUrlRedactingFilter):
+            return
+
+    # 伏せ字フィルターを登録する
+    redacting_filter = _WebhookUrlRedactingFilter()
+    httpx_logger.addFilter(redacting_filter)
+
+
+# モジュール読込時に一度だけ登録し、MCPサーバー・CLI・直接呼び出しのいずれでも有効にする
+_install_log_redaction()
 
 
 async def send_webhook_message(
