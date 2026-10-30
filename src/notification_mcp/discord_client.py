@@ -45,25 +45,22 @@ def _resolve_wait_seconds(error: httpx.HTTPStatusError, attempt: int) -> float:
 
     `Retry-After`ヘッダーが秒数形式であればその値を優先し、
     無い場合やHTTP日付形式等の秒数として解釈できない場合は指数バックオフとする。
-    いずれの場合も待機秒数は`_MAX_WAIT_SECONDS`を上限とする。
+    上限(`_MAX_WAIT_SECONDS`)を超えるかどうかの判定は呼び出し側で行う。
 
     Args:
         error: リトライ対象となったHTTPステータスエラー。
         attempt: 0始まりの試行回数。
 
     Returns:
-        次のリトライまでの待機秒数。
+        次のリトライまでの待機秒数(サーバー指示どおりの値で、上限による丸めはしない)。
     """
     # 秒数形式のRetry-Afterヘッダーがあれば、サーバーの指示に従う
     retry_after = error.response.headers.get("Retry-After")
     if retry_after is not None and _RETRY_AFTER_SECONDS_PATTERN.fullmatch(retry_after):
-        wait_seconds = float(retry_after)
-    else:
-        # それ以外は指数バックオフで待機する
-        wait_seconds = 2**attempt
+        return float(retry_after)
 
-    # 上限を超える待機はしない(inf等の異常値もここで上限に丸める)
-    return min(wait_seconds, _MAX_WAIT_SECONDS)
+    # それ以外は指数バックオフで待機する
+    return 2**attempt
 
 
 async def send_webhook_message_with_retry(

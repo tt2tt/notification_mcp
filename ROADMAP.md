@@ -105,7 +105,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
 送信処理はサービス層(`notifier.notify`)に切り出してMCPツールとCLIで共有し、MCP経由と同じ挙動(リトライ・ログ・URL非出力)を保つ。
 例外処理はデコレータ(`error_handlers.py`)に統一する。
 
-- [ ] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
+- [x] 送信処理のサービス層への切り出し(成否をMCP用の文字列ではなく例外で判定できるようにする) (`feature/notifier-service`)
   - [x] `exceptions.py` : `NotificationError`系の例外クラス — 基底`NotificationError`(ログレベルを属性で保持)と、`WebhookConfigError`/`ChannelNotConfiguredError`/`MessageRejectedError`/`SendFailedError`を定義する。メッセージは日本語でWebhook URLを含めない
   - [x] `error_handlers.py` : `reraise_as(target, *sources)` — 指定した例外を`target`へ変換して再送出する汎用デコレータ
   - [x] `error_handlers.py` : `translate_send_errors(func)` — 送信関数の`httpx`例外・文字数超過の`ValueError`を、チャンネル名入りの`SendFailedError`/`MessageRejectedError`へ変換するデコレータ
@@ -127,7 +127,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
     - [x] `error_handlers.py` : `return_error_message` — 想定外の例外も汎用メッセージへ変換し(例外の型名のみログ出力)、URLを含み得る例外文字列がMCPクライアントへ渡らないようにする
   - レビュー指摘対応(3回目、ユーザー判断により案Aを採用)
     - [x] `discord_client.py` : `send_webhook_message_with_retry` — 待機秒数が上限(60秒)を超える場合はリトライせず即座に例外を送出する(早すぎる再送・長時間ブロック・重複通知を防ぐ)
-    - [ ] `discord_client.py` : `_resolve_wait_seconds` — 上限への丸めを廃止し、サーバー指示どおりの待機秒数を返す(上限判定は呼び出し側で行う)
+    - [x] `discord_client.py` : `_resolve_wait_seconds` — 上限への丸めを廃止し、サーバー指示どおりの待機秒数を返す(上限判定は呼び出し側で行う)
 - [ ] CLIの実装 (`feature/cli`)
   - [ ] `error_handlers.py` : `return_exit_code(func)` — `NotificationError`をログ出力し、終了コード1を返すCLI用デコレータ
   - [ ] `cli.py` : `parse_args(argv: list[str] | None = None) -> argparse.Namespace` — `--channel`/`--message`(いずれも必須)を解析する
