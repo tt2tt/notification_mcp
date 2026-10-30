@@ -55,7 +55,7 @@ Discord通知用のMCPサーバーをPythonで実装する。
 今回は運用するチャンネルを`general`から`news`へ変更し、`fx`を追加する。`alert`は利用者が例外時の通知先として使用するため残す(本プログラム内に例外発生時に`alert`へ自動送信する処理はない)。
 MCPツール・CLI・直接呼び出しで`channel="general"`を指定している箇所は、`channel="news"`へ変更が必要になる。
 
-- [x] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
+- [ ] 通知先チャンネルの変更・追加(`general`→`news`、`fx`を追加) (`feature/news-fx-channels`)
   - [x] `.env` : `DISCORD_WEBHOOK_GENERAL`を`DISCORD_WEBHOOK_NEWS`へ名称変更する(機密情報を含み、ルール上Claudeは読み込まないためユーザーが実施)
   - [x] `.env` : FXチャンネルで発行したWebhook URLを`DISCORD_WEBHOOK_FX`として追加する(同上、ユーザーが実施)
   - [x] `.env.example` : キーを`DISCORD_WEBHOOK_NEWS`/`DISCORD_WEBHOOK_FX`/`DISCORD_WEBHOOK_ALERT`へ更新する(ユーザー確認のうえ内容を読まずに上書き)
@@ -74,6 +74,11 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `tests/test_config.py` : `_isolate_webhook_env` — `load_dotenv`のno-op化と既存の`DISCORD_WEBHOOK_`系環境変数の除去を行うautouseフィクスチャに共通化する
     - [x] `tests/test_config.py` : `test_load_webhook_config_skips_empty_values` — 警告ログの出力も検証する
     - [x] `tests/test_config.py` : `test_load_webhook_config_skips_invalid_entries` — 形式不正のURL・空のチャンネル名が読み飛ばされ、前後の空白が除去されることを検証する
+  - レビュー指摘対応(3回目)
+    - [ ] `notifier.py` : `_resolve_webhook_url` — 未設定エラーのメッセージに「`.env`に設定済みの場合はURLが空・形式不正で読み飛ばされていないかログを確認する」旨の案内を追加する(形式不正が「未設定」としか表示されない問題への対応)
+    - [ ] `notifier.py` : `_load_webhook_config` / `notify` — 形式不正のURLは読み飛ばされる仕様に合わせてdocstringの`Raises`を修正する
+    - [ ] `config.py` : `load_webhook_config` — 全件が読み飛ばされた場合も誤解のない案内文にし、不要な`f`接頭辞を外す
+    - [ ] `tests/test_config.py` : `test_load_webhook_config_raises_when_all_entries_skipped` — キーはあるが全件読み飛ばされた場合に`ValueError`になることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する
   - [ ] `cli.py` : モジュールdocstringの使用例を`--channel news`に更新する
