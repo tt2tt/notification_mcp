@@ -149,7 +149,7 @@ AI(MCPクライアント)以外のプログラムやバッチ・タスクスケ�
   - [x] `tests/test_error_handlers.py` : `test_return_error_message_returns_prefixed_message`
   - [x] `tests/test_error_handlers.py` : `test_return_exit_code_returns_one_on_error`
   - [x] `tests/test_discord_client.py` : `test_send_webhook_message_with_retry_gives_up_when_retry_after_too_long`
-  - [ ] `tests/test_notifier.py` : `test_notify_sends_message_successfully`
+  - [x] `tests/test_notifier.py` : `test_notify_sends_message_successfully`
   - [ ] `tests/test_notifier.py` : `test_notify_raises_for_unknown_channel`
   - [ ] `tests/test_notifier.py` : `test_notify_raises_webhook_config_error`
   - [ ] `tests/test_notifier.py` : `test_notify_raises_for_invalid_channel_name`
