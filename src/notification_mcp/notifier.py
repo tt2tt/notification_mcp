@@ -68,3 +68,28 @@ async def _send(channel: str, webhook_url: str, message: str) -> None:
     """
     # 送信時の例外はデコレータでチャンネル名入りの通知例外へ変換される
     await send_webhook_message_with_retry(webhook_url, message)
+
+
+async def notify(channel: str, message: str) -> None:
+    """指定チャンネルのWebhookへ通知を送信する。
+
+    Args:
+        channel: 送信先のチャンネル名(`.env`の`DISCORD_WEBHOOK_<チャンネル名>`に対応)。
+        message: 送信するメッセージ本文。
+
+    Raises:
+        WebhookConfigError: Webhook設定の読み込みに失敗した場合。
+        ChannelNotConfiguredError: 指定チャンネルが設定されていない場合。
+        MessageRejectedError: メッセージが文字数上限を超えている場合。
+        SendFailedError: HTTPエラーまたは通信エラーで送信に失敗した場合。
+    """
+    # .envから読み込んだチャンネル名とWebhook URLの対応表を取得する
+    webhook_config = _load_webhook_config()
+
+    # 指定されたチャンネル名からWebhook URLを解決する
+    webhook_url = _resolve_webhook_url(webhook_config, channel)
+
+    # リトライ付きでWebhookへ送信する
+    await _send(channel, webhook_url, message)
+
+    logger.info("'%s' へ通知を送信しました。", channel)
