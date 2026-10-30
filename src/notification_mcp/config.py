@@ -4,7 +4,7 @@ import logging
 import os
 import re
 
-from dotenv import dotenv_values, load_dotenv
+from dotenv import dotenv_values
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +138,9 @@ def _read_webhook_env() -> dict[str, str]:
 
 
 def load_webhook_config() -> dict[str, str]:
-    """.envからチャンネル名とWebhook URLの対応表を読み込む。
+    """.envとOS環境変数からチャンネル名とWebhook URLの対応表を読み込む。
 
+    `.env`は呼び出しのたびに読み直すため、変更は再起動なしで反映される。
     チャンネル名の形式が不正・値が空・URL形式が不正なキーは警告ログを出して読み飛ばし、
     不正な1件のために他の設定済みチャンネルまで送信できなくなることを防ぐ。
 
@@ -149,15 +150,12 @@ def load_webhook_config() -> dict[str, str]:
     Raises:
         ValueError: 使用できるWebhook URLが1件も設定されていない場合。
     """
-    # プロセス起動時に.envを読み込み、環境変数として展開する
-    load_dotenv()
+    # .envとOS環境変数からDISCORD_WEBHOOK_系の設定を読み込む
+    webhook_env = _read_webhook_env()
 
     webhook_config: dict[str, str] = {}
-    # プレフィックスに一致する環境変数だけを抽出し、チャンネル名をキーにした辞書を作る
-    for key, value in os.environ.items():
-        if not key.startswith(_WEBHOOK_ENV_PREFIX):
-            continue
-
+    # チャンネル名をキーにした辞書を作る
+    for key, value in webhook_env.items():
         # 1件ごとに解析し、使用できない設定は読み飛ばす
         entry = _parse_webhook_entry(key, value)
         if entry is None:

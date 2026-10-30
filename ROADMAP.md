@@ -90,8 +90,8 @@ MCPツール・CLI・直接呼び出しで`channel="general"`を指定してい�
     - [x] `notifier.py` : `_validate_channel` — 共通化した`is_valid_channel_name`を利用し、`notifier`内の重複したパターン定義を削除する
     - [x] `config.py` : `_parse_webhook_entry` — キーから作ったチャンネル名も`is_valid_channel_name`で検証し、不正な名前は(ログに名前を出さず)読み飛ばす
     - [x] `config.py` : `_read_webhook_env() -> dict[str, str]` — `.env`を`dotenv_values`で毎回読み直し、OS環境変数(優先)と合わせて`DISCORD_WEBHOOK_`系の設定を返す(`os.environ`は変更しない)
-    - [ ] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
-    - [ ] `tests/test_config.py` : `_isolate_webhook_env` — `dotenv_values`のモック化に変更する
+    - [x] `config.py` : `load_webhook_config` — `load_dotenv`をやめて`_read_webhook_env`を利用し、実行中のMCPサーバーでも`.env`の変更(名称変更・削除・値の修正)が再起動なしで反映されるようにする
+    - [x] `tests/test_config.py` : `_isolate_webhook_env` — `dotenv_values`のモック化に変更する
     - [ ] `tests/test_config.py` : `test_load_webhook_config_reflects_dotenv_changes` — `.env`の内容が変わると次回の読み込みで反映され、OS環境変数が優先されることを検証する
 - [ ] ドキュメント・使用例の更新 (`docs/news-fx-channels`)
   - [ ] `README.md` : `.env`の記載例・`channel`の指定例・CLIの実行例・直接呼び出しの例を`news`/`fx`に更新する

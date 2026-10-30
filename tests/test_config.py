@@ -14,9 +14,9 @@ _INVALID_URL = "https://example.com/not-a-webhook"
 @pytest.fixture(autouse=True)
 def _isolate_webhook_env(monkeypatch):
     """テストが実プロジェクトの.envや開発環境の環境変数に依存しないよう分離する。"""
-    # load_dotenv()は呼び出し元ディレクトリから親をたどって実プロジェクトの.envを
-    # 見つけてしまうため、no-op化してos.environのみを対象にする
-    monkeypatch.setattr(config, "load_dotenv", lambda: None)
+    # dotenv_values()は呼び出し元ディレクトリから親をたどって実プロジェクトの.envを
+    # 見つけてしまうため、空の内容を返すようにしてos.environのみを対象にする
+    monkeypatch.setattr(config, "dotenv_values", lambda: {})
 
     # 環境変数に残っているDISCORD_WEBHOOK_系をすべて取り除く
     for key in list(os.environ):
